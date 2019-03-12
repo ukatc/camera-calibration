@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 
-bgr = cv2.imread('distcor_01-edited2.bmp')
+bgr = cv2.imread('cleaned_grids/distcor_01.bmp')
 
 greyscale = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
 blur = cv2.GaussianBlur(greyscale, (5, 5), 0)
@@ -25,17 +25,6 @@ keypoints = detector.detect(bgr)
 points = cv2.KeyPoint_convert(keypoints)
 print('{} points found'.format(len(points)))
 
-centers = bgr.copy()
-centers[:, :, 0] = 0
-centers[:, :, 1] = 0
-centers[:, :, 2] = 0
-print('colouring centers')
-for p in points:
-    for x in range(-2, 2):
-        for y in range(-2, 2):
-            centers[int(p[1])+x, int(p[0])+y, 2] = 255
-cv2.imwrite('coloured centers.png', centers)
-
 print('searching for grid - ' + time.strftime('%H:%M:%S', time.gmtime()))
 gridparams = cv2.CirclesGridFinderParameters()
 
@@ -45,8 +34,8 @@ grid_cols, grid_rows = (170, 116)  # 19720 expected points
 
 found, grid = cv2.findCirclesGrid(bgr, (grid_cols, grid_rows), cv2.CALIB_CB_SYMMETRIC_GRID + cv2.CALIB_CB_CLUSTERING, detector, gridparams)
 griddoodle = bgr.copy()
+cv2.drawChessboardCorners(griddoodle, (grid_cols, grid_rows), grid if found else points, found)
 cv2.imwrite('detected_points.bmp', griddoodle)
-cv2.drawChessboardCorners(griddoodle, (grid_cols, grid_rows), grid, found)
 cv2.imshow('original', bgr)
 cv2.imshow('grid points', griddoodle)
 if found:
