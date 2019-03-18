@@ -7,12 +7,6 @@ np.set_printoptions(suppress=True)
 old_camera_matrix = np.array([[8.99155523e+03, 0.00000000e+00, 1.96472471e+03],
                               [0.00000000e+00, 8.98921557e+03, 1.34033122e+03],
                               [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
-rotate_vector = np.array([[-0.0068679],
-                          [-0.03979584],
-                          [1.5731318]])
-translate_vector = np.array([[34.7388702],
-                             [-27.7625536],
-                             [207.90678648]])
 distortion_coefficients = np.array([
     [-7.36345426e-01,
      2.66415181e+00,
