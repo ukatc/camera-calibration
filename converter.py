@@ -45,13 +45,14 @@ class Corners:
 def points_to_real(image_points: np.ndarray, image_corners: Corners, real_corners: Corners):
     real_points = np.zeros(image_points.shape, np.float32)
 
+    real_x_range = real_corners.top_right[0] - real_corners.top_left[0]
+    real_y_range = real_corners.bottom_left[1] - real_corners.top_left[1]
+
+    pixel_x_range = image_corners.top_right[0] - image_corners.top_left[0]
+    pixel_y_range = image_corners.bottom_left[1] - image_corners.top_left[1]
+
     for i in range(len(image_points)):
         image_point = image_points[i, 0]
-        real_x_range = real_corners.top_right[0] - real_corners.top_left[0]
-        real_y_range = real_corners.bottom_left[1] - real_corners.top_left[1]
-
-        pixel_x_range = image_corners.top_right[0] - image_corners.top_left[0]
-        pixel_y_range = image_corners.bottom_left[1] - image_corners.top_left[1]
 
         x_fraction = (image_point[0] - image_corners.top_left[0]) / pixel_x_range
         y_fraction = (image_point[1] - image_corners.top_left[1]) / pixel_y_range
