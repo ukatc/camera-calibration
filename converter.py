@@ -1,6 +1,8 @@
 import numpy as np
 import cv2 as cv
 
+np.set_printoptions(suppress=True)
+
 # Camera calibration parameters determined by checkers.py
 old_camera_matrix = np.array([[8.99155523e+03, 0.00000000e+00, 1.96472471e+03],
                               [0.00000000e+00, 8.98921557e+03, 1.34033122e+03],
