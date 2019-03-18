@@ -40,3 +40,20 @@ def correct_point(point, config: conf.Config):
     points = np.array([[[point[0], point[1]]]])
     corrected = correct_points(points, config)
     return corrected[0, 0, 0], corrected[0, 0, 1]
+
+
+def correct_camera_distortion(img, config: conf.Config):
+    return cv.undistort(img,
+                        config.distorted_camera_matrix,
+                        config.distortion_coefficients,
+                        None,
+                        config.undistorted_camera_matrix)
+
+
+def grid_align_undistorted_image(img, config: conf.Config, target_img_size=None):
+    if target_img_size is None:
+        target_img_size = (
+            config.grid_image_corners.top_left[0] + config.grid_image_corners.bottom_right[0],
+            config.grid_image_corners.top_left[1] + config.grid_image_corners.bottom_right[1],
+        )
+    return cv.warpPerspective(img, config.homography_matrix, target_img_size)

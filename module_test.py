@@ -41,3 +41,10 @@ print('calculated coordinates:')
 print(calib.correct_points(points, config))
 print('expected coordinates:')
 print(expectation)
+
+img = cv.imread('cleaned_grids/distcor_01.bmp')
+img = calib.correct_camera_distortion(img, config)
+img = calib.grid_align_undistorted_image(img, config)
+
+cv.imshow('grid', img)
+cv.waitKey()
