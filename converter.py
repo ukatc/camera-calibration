@@ -21,7 +21,10 @@ new_camera_matrix = np.array([[8.54052246e+03, 0.00000000e+00, 1.96340416e+03],
                               [0.00000000e+00, 8.55686035e+03, 1.33381448e+03],
                               [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
-points = np.array([[[3584.902, 2468.0232]]], np.float32)
+points = np.array([[[3584.902, 2468.0232]],
+                   [[71.22837, 2466.539]],
+                   [[68.2684, 62.64333]],
+                   [[3600.0374, 78.32093]]], np.float32)
 
 undistorted = cv.undistortPoints(points, old_camera_matrix, distortion_coefficients, P=new_camera_matrix)
 print(undistorted)
@@ -43,24 +46,31 @@ class Corners:
         self.bottom_right = bottom_right
 
 
-def point_to_real(image_point, image_corners: Corners, real_corners: Corners):
-    real_x_range = real_corners.top_right[0] - real_corners.top_left[0]
-    real_y_range = real_corners.bottom_left[1] - real_corners.top_left[1]
+def points_to_real(image_points: np.ndarray, image_corners: Corners, real_corners: Corners):
+    real_points = np.zeros(image_points.shape, np.float32)
 
-    pixel_x_range = image_corners.top_right[0] - image_corners.top_left[0]
-    pixel_y_range = image_corners.bottom_left[1] - image_corners.top_left[1]
+    for i in range(len(image_points)):
+        image_point = image_points[i, 0]
+        real_x_range = real_corners.top_right[0] - real_corners.top_left[0]
+        real_y_range = real_corners.bottom_left[1] - real_corners.top_left[1]
 
-    x_fraction = (image_point[0] - image_corners.top_left[0]) / pixel_x_range
-    y_fraction = (image_point[1] - image_corners.top_left[1]) / pixel_y_range
+        pixel_x_range = image_corners.top_right[0] - image_corners.top_left[0]
+        pixel_y_range = image_corners.bottom_left[1] - image_corners.top_left[1]
 
-    x = real_corners.top_left[0] + x_fraction * real_x_range
-    y = real_corners.top_left[1] + y_fraction * real_y_range
+        x_fraction = (image_point[0] - image_corners.top_left[0]) / pixel_x_range
+        y_fraction = (image_point[1] - image_corners.top_left[1]) / pixel_y_range
 
-    return x, y
+        x = real_corners.top_left[0] + x_fraction * real_x_range
+        y = real_corners.top_left[1] + y_fraction * real_y_range
+
+        real_points[i, 0, 0] = x
+        real_points[i, 0, 1] = y
+
+    return real_points
 
 
 image_corner_points = Corners((50, 50), (3599, 50), (50, 2465), (3599, 2465))
 space_corner_points = Corners((0, 0), (85, 0), (0, 58), (85, 58))
 
-location = point_to_real(flattened[0, 0], image_corner_points, space_corner_points)
-print(location)
+locations = points_to_real(flattened, image_corner_points, space_corner_points)
+print(locations)
