@@ -6,6 +6,9 @@ import numpy as np
 
 @attr.s
 class Corners:
+    """
+    Stores (X, Y) pairs for corners of a rectangle in an image
+    """
     top_left = attr.ib()
     top_right = attr.ib()
     bottom_left = attr.ib()
@@ -14,6 +17,9 @@ class Corners:
 
 @attr.s
 class Config:
+    """
+    Camera calibration properties for a fixed camera looking at a given plane
+    """
     distorted_camera_matrix = attr.ib(type=np.ndarray, default=None)
     distortion_coefficients = attr.ib(type=np.ndarray, default=None)
     undistorted_camera_matrix = attr.ib(type=np.ndarray, default=None)
@@ -26,7 +32,19 @@ class Config:
             chessboard_path, chess_rows, chess_cols,
             dot_grid_path, dot_detector, dot_rows, dot_cols, dot_grid_width, dot_grid_height
     ):
-
+        """
+        Generate a calibration configuration object for a camera using a pair of chessboard and dot grid images
+        :param chessboard_path: The path to a chessboard image taken by the camera
+        :param chess_rows: The number of rows of square-intersection points in the grid
+        :param chess_cols: The number of columns of square-intersection points in the grid
+        :param dot_grid_path: The path to an image of a grid of dots taken by the camera
+        :param dot_detector: An openCV dot detector able to detect all the dots in the given image
+        :param dot_rows: The number of rows in the dot grid
+        :param dot_cols: The number of columns in the dot grid
+        :param dot_grid_width: The width of the dot grid, measured from dot centers
+        :param dot_grid_height: The height of the dot grid, measured from dot centers
+        :return: A pair indicating if the configuration object was fully constructed, and the configuration object
+        """
         config = Config()
 
         chessboard = cv.imread(chessboard_path)
