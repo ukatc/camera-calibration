@@ -102,7 +102,6 @@ class Config:
         grid_width = point_spacing * (dot_cols - 1)
         grid_height = point_spacing * (dot_rows - 1)
 
-        corners = np.array([top_left, top_right, bottom_left, bottom_right])
         target_corners = np.array([
             [border, border],  # top left
             [grid_width + border, border],  # top right
@@ -110,7 +109,16 @@ class Config:
             [grid_width + border, grid_height + border],  # bottom right
         ])
 
-        config.homography_matrix, _ = cv.findHomography(corners, target_corners)
+        target_points = np.zeros((dot_rows * dot_cols, 2), np.float32)
+        # measuring from the bottom left, initially going along rows, to match the detected dot grid
+        for row in range(dot_rows):
+            for col in range(dot_cols):
+                target_points[row * dot_cols + col, :2] = ((border + ((dot_cols - (1+col)) * point_spacing)),
+                                                           (border + ((dot_rows - (1+row)) * point_spacing)))
+
+        grid_points = np.array([dot[0] for dot in grid])
+
+        config.homography_matrix, _ = cv.findHomography(grid_points, target_points)
         config.grid_image_corners = Corners(*target_corners)
         config.grid_space_corners = Corners((0, 0), (dot_grid_width, 0), (0, dot_grid_height), (dot_grid_width, dot_grid_height))
 
