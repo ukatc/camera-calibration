@@ -29,19 +29,38 @@ def assess_points_transform_to_given_absolute_accuracy(accuracy: float):
                                  grid_space_corners=calib.Corners(
                                      top_left=(0, 0), top_right=(85, 0), bottom_left=(0, 58), bottom_right=(85, 58)
                                  ))
-    points = np.array([[[3584.902, 2468.0232]],
-                       [[71.22837, 2466.539]],
-                       [[68.2684, 62.64333]],
-                       [[3600.0374, 78.32093]]], np.float32)
+
+    # Points determined by running an openCV blob detector over cleaned_grids/distcor_01.bmp
+    points = np.array([[[3584.902, 2468.0232]],  # bottom right
+                       [[71.22837, 2466.539]],  # bottom left
+                       [[68.2684, 62.64333]],  # top left
+                       [[3600.0374, 78.32093]],  # top right
+
+                       [[1804.8428, 38.65753]],  # middle top
+                       [[1799.092, 2498.543]],  # middle bottom
+                       [[47.950756, 1299.2955]],  # middle left
+                       [[3611.6602, 1307.9681]],  # middle right
+                       [[1800.4049, 1304.3975]],  # center
+                       ], np.float32)
 
     expectations = np.array([[85, 58],
                              [0, 58],
                              [0, 0],
-                             [85, 0]], np.float32)
+                             [85, 0],
+
+                             [83/2, 0],
+                             [83/2, 58],
+                             [0, 59/2],
+                             [85, 59/2],
+                             [83/2, 59/2],
+                             ], np.float32)
 
     corrected_points = calib.correct_points(points, sample_config)
 
     assert points.shape == corrected_points.shape
+
+    print(expectations)
+    print(corrected_points)
 
     for i in range(len(corrected_points)):
         original = points[i, 0]
