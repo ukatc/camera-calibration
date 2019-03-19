@@ -10,27 +10,20 @@ def assess_points_transform_to_given_absolute_accuracy(accuracy: float):
     :param accuracy: A point will be accepted if its x and y components are this close to their expected values
     """
     np.set_printoptions(suppress=True)
-    sample_config = calib.Config(distorted_camera_matrix=np.array([[11279.52522059, 0., 1991.71685348],
-                                                                   [0., 11276.98405162, 1329.31521534],
-                                                                   [0., 0., 1.]]),
-                                 distortion_coefficients=np.array([
-                                     [-1.15774513, 5.3907676, -0.00508719, -0.00711924, -31.51600516]
-                                 ]),
-                                 undistorted_camera_matrix=np.array([[10724.38671875, 0., 1986.37829266],
-                                                                     [0., 10739.57226562, 1323.08504989],
-                                                                     [0., 0., 1.]]),
-                                 homography_matrix=np.array([[1.00548584, -0.00129961, -34.49427423],
-                                                             [-0.00597113, 1.00651009, -18.51335702],
-                                                             [-0.0000029, -0.00000219, 1.]]),
-                                 grid_image_corners=calib.Corners(
-                                     top_left=np.array([50, 50]), top_right=np.array([3599, 50]),
-                                     bottom_left=np.array([50, 2465]), bottom_right=np.array([3599, 2465])
-                                 ),
-                                 grid_space_corners=calib.Corners(
-                                     top_left=(0, 0), top_right=(85, 0), bottom_left=(0, 58), bottom_right=(85, 58)
-                                 ))
+    sample_config = calib.Config(distorted_camera_matrix=np.array([[3.2894140643482078e+03, 0.0000000000000000e+00, 1.9176779735640416e+03],
+                                                                   [0.0000000000000000e+00, 3.2904025933090470e+03, 1.3998964108727967e+03],
+                                                                   [0.0000000000000000e+00, 0.0000000000000000e+00, 1.0000000000000000e+00]]),
+                                 distortion_coefficients=np.array([[-0.091678368932376 ,  0.004685276554469 , -0.002864536969103 , -0.0007950003034298,  0.0239023771408992]]),
+                                 undistorted_camera_matrix=np.array([[3.1303671875000000e+03, 0.0000000000000000e+00, 1.9138636096939445e+03],
+                                                                     [0.0000000000000000e+00, 3.1353242187500000e+03, 1.3911821821740596e+03],
+                                                                     [0.0000000000000000e+00, 0.0000000000000000e+00, 1.0000000000000000e+00]]),
+                                 homography_matrix=np.array([[ 1.0052048861138621e+00, -2.2537481739086729e-03, -3.0176134059966238e+01],
+                                                             [-5.6034672817510825e-03,  1.0057402244836438e+00, -1.8547576373566425e+01],
+                                                             [-2.5280366141280606e-06, -2.6176789860478385e-06, 1.0000000000000000e+00]]),
+                                 grid_image_corners=calib.Corners(top_left=np.array([50, 50]), top_right=np.array([3599,   50]), bottom_left=np.array([  50, 2465]), bottom_right=np.array([3599, 2465])),
+                                 grid_space_corners=calib.Corners(top_left=(0, 0), top_right=(85, 0), bottom_left=(0, 58), bottom_right=(85, 58)))
 
-    # Points determined by running an openCV blob detector over cleaned_grids/distcor_01.bmp
+    # Points determined by dot centers from running an openCV blob detector over cleaned_grids/distcor_01.bmp
     points = np.array([[[3584.902, 2468.0232]],  # bottom right
                        [[71.22837, 2466.539]],  # bottom left
                        [[68.2684, 62.64333]],  # top left
@@ -60,7 +53,7 @@ def assess_points_transform_to_given_absolute_accuracy(accuracy: float):
     assert points.shape == corrected_points.shape
 
     print(expectations)
-    print(corrected_points)
+    print(np.array([point[0] for point in corrected_points]))
 
     for i in range(len(corrected_points)):
         original = points[i, 0]
