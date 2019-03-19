@@ -1,27 +1,34 @@
 import camera_calibration as calib
-import cv2 as cv
 import numpy as np
-from pytest import approx
+import pytest
 
 
-def test_points_transform_to_expected_mm_values():
-    params = cv.SimpleBlobDetector_Params()
-    params.minArea = 50
-    params.maxArea = 1000
-    params.filterByArea = True
-    params.minCircularity = 0.2
-    params.filterByCircularity = True
-    params.blobColor = 0
-    params.filterByColor = True
-    detector = cv.SimpleBlobDetector_create(params)
-
-    finished, config = calib.Config.generate(
-        'mocked checkboard.png', 10, 15,
-        'cleaned_grids/distcor_01.bmp', detector, 116, 170, 85, 58
-    )
-
-    assert finished, 'Cannot create complete camera calibration config'
-
+def assess_points_transform_to_given_absolute_accuracy(accuracy: float):
+    """
+    Apply a camera correction to points, testing if the result is within the given accuracy of their expected corrected
+    values
+    :param accuracy: A point will be accepted if its x and y components are this close to their expected values
+    """
+    np.set_printoptions(suppress=True)
+    sample_config = calib.Config(distorted_camera_matrix=np.array([[11279.52522059, 0., 1991.71685348],
+                                                                   [0., 11276.98405162, 1329.31521534],
+                                                                   [0., 0., 1.]]),
+                                 distortion_coefficients=np.array([
+                                     [-1.15774513, 5.3907676, -0.00508719, -0.00711924, -31.51600516]
+                                 ]),
+                                 undistorted_camera_matrix=np.array([[10724.38671875, 0., 1986.37829266],
+                                                                     [0., 10739.57226562, 1323.08504989],
+                                                                     [0., 0., 1.]]),
+                                 homography_matrix=np.array([[1.00548584, -0.00129961, -34.49427423],
+                                                             [-0.00597113, 1.00651009, -18.51335702],
+                                                             [-0.0000029, -0.00000219, 1.]]),
+                                 grid_image_corners=calib.Corners(
+                                     top_left=np.array([50, 50]), top_right=np.array([3599, 50]),
+                                     bottom_left=np.array([50, 2465]), bottom_right=np.array([3599, 2465])
+                                 ),
+                                 grid_space_corners=calib.Corners(
+                                     top_left=(0, 0), top_right=(85, 0), bottom_left=(0, 58), bottom_right=(85, 58)
+                                 ))
     points = np.array([[[3584.902, 2468.0232]],
                        [[71.22837, 2466.539]],
                        [[68.2684, 62.64333]],
@@ -32,7 +39,7 @@ def test_points_transform_to_expected_mm_values():
                              [0, 0],
                              [85, 0]], np.float32)
 
-    corrected_points = calib.correct_points(points, config)
+    corrected_points = calib.correct_points(points, sample_config)
 
     assert points.shape == corrected_points.shape
 
@@ -42,5 +49,22 @@ def test_points_transform_to_expected_mm_values():
         expectation = expectations[i]
         assert len(point) == 2
 
-        assert point == approx(expectation, abs=1e-2),\
-            'point {} corrects to {}. Expected values within 0.01mm of {}'.format(original, point, expectation)
+        assert point == pytest.approx(expectation, abs=accuracy), \
+            'point {} corrects to {}. Expected values within {}mm of {}'.format(original, point, accuracy, expectation)
+
+
+def test_points_transform_accurate_to_nearest_mm():
+    assess_points_transform_to_given_absolute_accuracy(0.5)
+
+
+def test_points_transform_accurate_to_nearest_tenth_mm():
+    assess_points_transform_to_given_absolute_accuracy(0.05)
+
+
+def test_points_transform_accurate_to_nearest_hundredth_mm():
+    assess_points_transform_to_given_absolute_accuracy(0.005)
+
+
+@pytest.mark.xfail  # Test for micron accuracy, but don't expect it
+def test_points_transform_accurate_to_nearest_micron():
+    assess_points_transform_to_given_absolute_accuracy(0.0005)
