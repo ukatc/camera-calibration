@@ -1,4 +1,5 @@
 import camera_calibration as calib
+import cv2 as cv
 import numpy as np
 import pytest
 
@@ -10,18 +11,22 @@ def assess_points_transform_to_given_absolute_accuracy(accuracy: float):
     :param accuracy: A point will be accepted if its x and y components are this close to their expected values
     """
     np.set_printoptions(suppress=True)
-    sample_config = calib.Config(distorted_camera_matrix=np.array([[3.2894140643482078e+03, 0.0000000000000000e+00, 1.9176779735640416e+03],
-                                                                   [0.0000000000000000e+00, 3.2904025933090470e+03, 1.3998964108727967e+03],
-                                                                   [0.0000000000000000e+00, 0.0000000000000000e+00, 1.0000000000000000e+00]]),
-                                 distortion_coefficients=np.array([[-0.091678368932376 ,  0.004685276554469 , -0.002864536969103 , -0.0007950003034298,  0.0239023771408992]]),
-                                 undistorted_camera_matrix=np.array([[3.1303671875000000e+03, 0.0000000000000000e+00, 1.9138636096939445e+03],
-                                                                     [0.0000000000000000e+00, 3.1353242187500000e+03, 1.3911821821740596e+03],
-                                                                     [0.0000000000000000e+00, 0.0000000000000000e+00, 1.0000000000000000e+00]]),
-                                 homography_matrix=np.array([[ 1.0052048861138621e+00, -2.2537481739086729e-03, -3.0176134059966238e+01],
-                                                             [-5.6034672817510825e-03,  1.0057402244836438e+00, -1.8547576373566425e+01],
-                                                             [-2.5280366141280606e-06, -2.6176789860478385e-06, 1.0000000000000000e+00]]),
-                                 grid_image_corners=calib.Corners(top_left=np.array([50, 50]), top_right=np.array([3599,   50]), bottom_left=np.array([  50, 2465]), bottom_right=np.array([3599, 2465])),
-                                 grid_space_corners=calib.Corners(top_left=(0, 0), top_right=(85, 0), bottom_left=(0, 58), bottom_right=(85, 58)))
+
+    params = cv.SimpleBlobDetector_Params()
+    params.minArea = 50
+    params.maxArea = 1000
+    params.filterByArea = True
+    params.minCircularity = 0.2
+    params.filterByCircularity = True
+    params.blobColor = 0
+    params.filterByColor = True
+    detector = cv.SimpleBlobDetector_create(params)
+
+    completed, sample_config = calib.Config.generate(
+        '002h.bmp', 6, 8,
+        'cleaned_grids/distcor_01.bmp', detector, 116, 170, 84.5, 57.5
+    )
+    assert completed, 'Unable to fully generate camera calibration config'
 
     # Points determined by dot centers from running an openCV blob detector over cleaned_grids/distcor_01.bmp
     points = np.array([[[3584.902, 2468.0232]],  # bottom right
@@ -36,15 +41,15 @@ def assess_points_transform_to_given_absolute_accuracy(accuracy: float):
                        [[1800.4049, 1304.3975]],  # center
                        ], np.float32)
 
-    expectations = np.array([[85, 58],
-                             [0, 58],
+    expectations = np.array([[84.5, 57.5],
+                             [0, 57.5],
                              [0, 0],
-                             [85, 0],
+                             [84.5, 0],
 
                              [83/2, 0],
-                             [83/2, 58],
+                             [83/2, 57.5],
                              [0, 59/2],
-                             [85, 59/2],
+                             [84.5, 59/2],
                              [83/2, 59/2],
                              ], np.float32)
 
