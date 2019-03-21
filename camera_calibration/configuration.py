@@ -27,67 +27,139 @@ class Config:
     grid_image_corners = attr.ib(type=Corners, default=None)
     grid_space_corners = attr.ib(type=Corners, default=None)
 
-    @staticmethod
-    def generate(
-            chessboard_path, chess_rows, chess_cols,
-            dot_grid_path, dot_detector, dot_rows, dot_cols, dot_grid_width, dot_grid_height
-    ):
+    def populate_distortion_from_chessboard(self, chessboard_path: str, rows: int, cols: int):
         """
-        Generate a calibration configuration object for a camera using a pair of chessboard and dot grid images
-        :param chessboard_path: The path to a chessboard image taken by the camera
-        :param chess_rows: The number of rows of square-intersection points in the grid
-        :param chess_cols: The number of columns of square-intersection points in the grid
-        :param dot_grid_path: The path to an image of a grid of dots taken by the camera
-        :param dot_detector: An openCV dot detector able to detect all the dots in the given image
-        :param dot_rows: The number of rows in the dot grid
-        :param dot_cols: The number of columns in the dot grid
-        :param dot_grid_width: The width of the dot grid, measured from dot centers
-        :param dot_grid_height: The height of the dot grid, measured from dot centers
-        :return: A pair indicating if the configuration object was fully constructed, and the configuration object
+        Populate a config object's camera matrices and distortion coefficient properties using a chessboard image
+        :param chessboard_path: The path to an image of a chess grid taken by the camera
+        :param rows: The number of rows in the grid of black square corner intersection points
+        :param cols: The number of columns in the grid of black square corner intersection points
+        :return: A boolean indicating if the properties were successfully populated
         """
-        config = Config()
-
         chessboard = cv.imread(chessboard_path)
         gray_chessboard = cv.cvtColor(chessboard, cv.COLOR_BGR2GRAY)
-        found, corners = cv.findChessboardCorners(gray_chessboard, (chess_rows, chess_cols))
+        found, corners = cv.findChessboardCorners(gray_chessboard, (rows, cols))
         if not found:
-            return False, config
-
-        objp = np.zeros((chess_cols * chess_rows, 3), np.float32)
-        objp[:, :2] = np.mgrid[0:chess_rows*5:5, 0:chess_cols*5:5].T.reshape(-1, 2)
-        objpoints = [objp]
-        imgpoints = [corners]
+            return False
 
         h, w = chessboard.shape[:2]
-        calibrated, camera_matrix, distortion_coefficients, _, _ = cv.calibrateCamera(objpoints, imgpoints, (w, h), None, None)
+        return self.populate_distortion_from_grid(corners, rows, cols, w, h)
 
-        if not calibrated:
-            return False, config
-
-        config.distorted_camera_matrix = camera_matrix
-        config.distortion_coefficients = distortion_coefficients
-
-        new_camera_matrix, _ = cv.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w, h), 1, (w, h))
-
-        config.undistorted_camera_matrix = new_camera_matrix
-
+    def populate_distortion_from_symmetric_dot_pattern(self, dot_grid_path: str, dot_detector: cv.SimpleBlobDetector, rows: int, cols: int):
+        """
+        Populate a config object's camera matrices and distortion coefficient properties using a grid of reference dots
+        :param dot_grid_path: The path to an image of a symmetric dot grid pattern taken by the camera
+        :param dot_detector: An openCV dot detector able to detect all the dots in the given image
+        :param rows: The number of rows in the dot grid
+        :param cols: The number of columns in the dot grid
+        :return: A boolean indicating if the properties were successfully populated
+        """
         dots = cv.imread(dot_grid_path)
-        delensed = cv.undistort(dots, camera_matrix, distortion_coefficients, None, new_camera_matrix)
+        found, grid = cv.findCirclesGrid(
+            dots,
+            (cols, rows),
+            cv.CALIB_CB_SYMMETRIC_GRID + cv.CALIB_CB_CLUSTERING,
+            dot_detector,
+            cv.CirclesGridFinderParameters()
+        )
+        if not found:
+            return False
+
+        h, w = dots.shape[:2]
+        return self.populate_distortion_from_grid(grid, rows, cols, w, h)
+
+    def populate_homography_from_chessboard(self, chessboard_path: str, rows: int, cols: int, width: float, height: float):
+        """
+        Populate a config object's homography matrix and grid corner properties using a lens distorted chessboard image
+        :param chessboard_path: The path to a chessboard image taken by the camera
+        :param rows: The number of rows in the grid of black square corner intersection points
+        :param cols: The number of columns in the grid of black square corner intersection points
+        :param width: The width of the grid, measured from black square corner intersection points
+        :param height: The height of the dot grid, measured from black square corner intersection points
+        :return: A boolean indicating if the properties were successfully populated
+        """
+        chessboard = cv.imread(chessboard_path)
+        gray_chessboard = cv.cvtColor(chessboard, cv.COLOR_BGR2GRAY)
+        found, corners = cv.findChessboardCorners(gray_chessboard, (rows, cols))
+        if not found:
+            return False
+
+        return self.populate_homography_from_grid(corners, cols, rows, width, height)
+
+    def populate_homography_from_symmetric_dot_pattern(self, dot_grid_path: str, dot_detector: cv.SimpleBlobDetector, rows: int, cols:int, width: float, height: float):
+        """
+        Populate a config object's homography matrix and grid corner properties using a lens distorted grid of reference points
+        :param dot_grid_path: The path to an image of a symmetric dot grid pattern taken by the camera
+        :param dot_detector: An openCV dot detector able to detect all the dots in the given image
+        :param rows: The number of rows in the dot grid
+        :param cols: The number of columns in the dot grid
+        :param width: The width of the dot grid, measured from dot centers
+        :param height: The height of the dot grid, measured from dot centers
+        :return: A boolean indicating if the properties were successfully populated
+        """
+        dots = cv.imread(dot_grid_path)
+        delensed = cv.undistort(dots,
+                                self.distorted_camera_matrix,
+                                self.distortion_coefficients,
+                                None,
+                                self.undistorted_camera_matrix)
         found, grid = cv.findCirclesGrid(
             delensed,
-            (dot_cols, dot_rows),
+            (cols, rows),
             cv.CALIB_CB_SYMMETRIC_GRID + cv.CALIB_CB_CLUSTERING,
             dot_detector,
             cv.CirclesGridFinderParameters()
         )
 
         if not found:
-            return False, config
+            return False
 
+        return self.populate_homography_from_grid(grid, cols, rows, width, height)
+
+    def populate_distortion_from_grid(self, grid: np.ndarray, rows: int, cols: int, image_width: int, image_height: int):
+        """
+        Populate a config object's camera matrices and distortion coefficient properties using a grid points
+        :param grid: A grid of points from an image taken by the camera, generated by openCV's findCirclesGrid or findChessboardCorners methods
+        :param rows: The number of rows in the grid
+        :param cols: The number of columns in the grid
+        :param image_width: The width of the camera's images in pixels
+        :param image_height: The height of the camera's images in pixels
+        :return: A boolean indicating if the properties were successfully populated
+        """
+        objp = np.zeros((cols * rows, 3), np.float32)
+        objp[:, :2] = np.mgrid[0:rows * 5:5, 0:cols * 5:5].T.reshape(-1, 2)
+        objpoints = [objp]
+        imgpoints = [grid]
+
+        calibrated, camera_matrix, distortion_coefficients, _, _ = cv.calibrateCamera(objpoints, imgpoints, (image_width, image_height), None,
+                                                                                      None)
+
+        if not calibrated:
+            return False
+
+        self.distorted_camera_matrix = camera_matrix
+        self.distortion_coefficients = distortion_coefficients
+
+        self.undistorted_camera_matrix, _ = cv.getOptimalNewCameraMatrix(camera_matrix,
+                                                                         distortion_coefficients,
+                                                                         (image_width, image_height),
+                                                                         1,
+                                                                         (image_width, image_height))
+        return True
+
+    def populate_homography_from_grid(self, grid: np.ndarray, cols: int, rows: int, width: float, height: float):
+        """
+        Populate a config object's homography matrix and grid corner properties using a grid of reference points
+        :param grid: A grid of points from an image taken by the camera, generated by openCV's findCirclesGrid or findChessboardCorners methods
+        :param cols: The number of columns in the grid
+        :param rows: The number of rows in the grid
+        :param width: The distance from the leftmost to rightmost edges of the grid
+        :param height: The distance from the topmost to bottommost edges of the grid
+        :return: A boolean indicating if the properties were successfully populated
+        """
         bottom_right = grid[0, 0]
-        bottom_left = grid[dot_cols - 1, 0]
+        bottom_left = grid[cols - 1, 0]
         top_left = grid[-1, 0]
-        top_right = grid[-dot_cols, 0]
+        top_right = grid[-cols, 0]
 
         def distance(p1, p2):
             return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
@@ -97,11 +169,12 @@ class Config:
                          distance(bottom_left, bottom_right))
         grid_height = max(distance(top_left, bottom_left),
                           distance(top_right, bottom_right))
-        point_spacing = math.ceil(max(grid_width / (dot_cols - 1),
-                                      grid_height / (dot_rows - 1)))
-        grid_width = point_spacing * (dot_cols - 1)
-        grid_height = point_spacing * (dot_rows - 1)
+        point_spacing = math.ceil(max(grid_width / (cols - 1),
+                                      grid_height / (rows - 1)))
+        grid_width = point_spacing * (cols - 1)
+        grid_height = point_spacing * (rows - 1)
 
+        corners = np.array([top_left, top_right, bottom_left, bottom_right])
         target_corners = np.array([
             [border, border],  # top left
             [grid_width + border, border],  # top right
@@ -109,17 +182,7 @@ class Config:
             [grid_width + border, grid_height + border],  # bottom right
         ])
 
-        target_points = np.zeros((dot_rows * dot_cols, 2), np.float32)
-        # measuring from the bottom left, initially going along rows, to match the detected dot grid
-        for row in range(dot_rows):
-            for col in range(dot_cols):
-                target_points[row * dot_cols + col, :2] = ((border + ((dot_cols - (1+col)) * point_spacing)),
-                                                           (border + ((dot_rows - (1+row)) * point_spacing)))
-
-        grid_points = np.array([dot[0] for dot in grid])
-
-        config.homography_matrix, _ = cv.findHomography(grid_points, target_points)
-        config.grid_image_corners = Corners(*target_corners)
-        config.grid_space_corners = Corners((0, 0), (dot_grid_width, 0), (0, dot_grid_height), (dot_grid_width, dot_grid_height))
-
-        return True, config
+        self.homography_matrix, _ = cv.findHomography(corners, target_corners)
+        self.grid_image_corners = Corners(*target_corners)
+        self.grid_space_corners = Corners((0, 0), (width, 0), (0, height),  (width, height))
+        return True
