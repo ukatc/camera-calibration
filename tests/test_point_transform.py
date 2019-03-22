@@ -19,24 +19,25 @@ def assess_points_transform_to_given_absolute_accuracy(
     assert points.shape == corrected_points.shape
 
     distances = []
+    highest = 0
     for i in range(len(corrected_points)):
+        original = points[i, 0]
         point = corrected_points[i, 0]
         expectation = expectations[i]
         assert len(point) == 2
-        distances.append(math.hypot(point[0] - expectation[0], point[1] - expectation[1]))
+        distance = math.hypot(point[0] - expectation[0], point[1] - expectation[1])
+        if distance > highest:
+            highest = distance
+            print('new highest: px{} res{} exp{} dist{}'.format(original, point, expectation, distance))
+        distances.append(distance)
 
-    print('image points:')
-    print(points)
-    print('expected locations:')
-    print(expectations)
-    print('calculated locations:')
-    print(np.array([point[0] for point in corrected_points]))
-    print('deviations:')
-    print(distances)
+    print('average deviation:\n{}mm'.format(sum(distances) / len(distances)))
+    print('max deviation:\n{}mm'.format(max(distances)))
 
     assert max(distances) <= accuracy, 'Expected and calculated points differed by more than the permitted accuracy'
 
 
+@pytest.mark.skip(reason='It takes ~30s to run on my machine, while the others take 2s total')
 def test_points_transform_from_combined_config_to_hundredth_mm():
     params = cv.SimpleBlobDetector_Params()
     params.minArea = 50
@@ -80,3 +81,63 @@ def test_points_transform_from_combined_config_to_hundredth_mm():
                              ], np.float32)
 
     assess_points_transform_to_given_absolute_accuracy(config, points, expectations, 0.005)
+
+
+def test_points_transform_from_only_chessboard_to_hundredth_mm():
+    config = calib.Config()
+    assert config.populate_distortion_from_chessboard('002h.bmp', 6, 8), 'Unable to populate distortion parameters'
+    assert config.populate_homography_from_chessboard('002h.bmp', 8, 6, 90.06, 64.45), 'Unable to populate homography parameters'
+
+    found, corners = cv.findChessboardCorners(cv.imread('002h.bmp'), (8, 6))
+    targets = np.zeros((len(corners), 2), np.float32)
+    for i in range(8):
+        for j in range(6):
+            targets[j * 8 + i, 0] = 90.06 * (7-i) / 7
+            targets[j * 8 + i, 1] = 64.45 * (5-j) / 5
+
+    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
+
+
+def test_points_transform_from_only_mock_chessboard_to_hundredth_mm():
+    config = calib.Config()
+    assert config.populate_distortion_from_chessboard('mocked checkboard.png', 10, 15), 'Unable to populate distortion parameters'
+    assert config.populate_homography_from_chessboard('mocked checkboard.png', 15, 10, 70, 45), 'Unable to populate homography parameters'
+
+    found, corners = cv.findChessboardCorners(cv.imread('mocked checkboard.png'), (15, 10))
+    targets = np.zeros((len(corners), 2), np.float32)
+    for i in range(15):
+        for j in range(10):
+            targets[j * 15 + i, 0] = 70 * (14-i) / 14
+            targets[j * 15 + i, 1] = 45 * (9-j) / 9
+
+    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
+
+
+def test_points_transform_from_only_mock_chessboard2_to_hundredth_mm():
+    config = calib.Config()
+    assert config.populate_distortion_from_chessboard('mocked checkboard2.png', 12, 17), 'Unable to populate distortion parameters'
+    assert config.populate_homography_from_chessboard('mocked checkboard2.png', 17, 12, 80, 55), 'Unable to populate homography parameters'
+
+    found, corners = cv.findChessboardCorners(cv.imread('mocked checkboard2.png'), (17, 12))
+    targets = np.zeros((len(corners), 2), np.float32)
+    for i in range(17):
+        for j in range(12):
+            targets[j * 17 + i, 0] = 80 * (16-i) / 16
+            targets[j * 17 + i, 1] = 55 * (11-j) / 11
+
+    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
+
+
+def test_points_transform_from_only_binarized_chessboard_to_hundredth_mm():
+    config = calib.Config()
+    assert config.populate_distortion_from_chessboard('binarized.png', 6, 8), 'Unable to populate distortion parameters'
+    assert config.populate_homography_from_chessboard('binarized.png', 8, 6, 90.06, 64.45), 'Unable to populate homography parameters'
+
+    found, corners = cv.findChessboardCorners(cv.imread('binarized.png'), (8, 6))
+    targets = np.zeros((len(corners), 2), np.float32)
+    for i in range(8):
+        for j in range(6):
+            targets[j * 8 + i, 0] = 90.06 * (7-i) / 7
+            targets[j * 8 + i, 1] = 64.45 * (5-j) / 5
+
+    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
