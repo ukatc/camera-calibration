@@ -82,8 +82,11 @@ class Config:
         found, corners = cv.findChessboardCorners(gray_chessboard, (rows, cols))
         if not found:
             return False
-
-        return self.populate_homography_from_grid(corners, cols, rows, width, height)
+        corners = cv.undistortPoints(corners,
+                                     self.distorted_camera_matrix,
+                                     self.distortion_coefficients,
+                                     P=self.undistorted_camera_matrix)
+        return self.populate_homography_from_grid(corners, rows, cols, width, height)
 
     def populate_homography_from_symmetric_dot_pattern(self, dot_grid_path: str, dot_detector: cv.SimpleBlobDetector, rows: int, cols:int, width: float, height: float):
         """
