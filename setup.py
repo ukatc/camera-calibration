@@ -18,7 +18,7 @@ AUTHOR = 'UK Astronomy Technology Center'
 REQUIRES_PYTHON = '>=3.7.0'
 VERSION = None
 
-# What packages are required for this module to be executed?
+# What packages are required for this package to be executed?
 REQUIRED = [
     'attrs==19.1.0',
     'numpy==1.16.2',

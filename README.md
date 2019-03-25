@@ -4,14 +4,14 @@ A python library to simplify performing camera calibration and image un-distorti
 
 ## Installation
 
-The camera calibration module can be installed by running:
+The camera calibration package can be installed by running:
 ```bash
 pip install git+https://github.com/ukatc/camera-calibration
 ```
 
 ## Usage
 
-The module exposes a set of methods for correcting camera distortion in images and pixel
+The package exposes a set of methods for correcting camera distortion in images and pixel
 coordinates, as well as converting pixel coordinates to real world units.
 
 These methods all require a calibration configuration object be passed in.
@@ -50,9 +50,9 @@ pip install -r requirements.txt
 
 ### Tests
 
-Tests are performed using pytest, which is included in the module's `requirements.txt`.
-They can be run from the module's directory with the `pytest` command
+Tests are performed using pytest, which is included in the packages's `requirements.txt`.
+They can be run from the package's directory with the `pytest` command
 
 ## Versioning
 
-This module uses [semantic versioning](https://semver.org/).
+This package uses [semantic versioning](https://semver.org/).
