@@ -4,18 +4,33 @@ import math
 import numpy as np
 
 
-@attr.s
+@attr.s(cmp=False)
 class Corners:
     """
     Stores (X, Y) pairs for corners of a rectangle in an image
     """
-    top_left = attr.ib()
-    top_right = attr.ib()
-    bottom_left = attr.ib()
-    bottom_right = attr.ib()
+    top_left = attr.ib(type=np.ndarray)
+    top_right = attr.ib(type=np.ndarray)
+    bottom_left = attr.ib(type=np.ndarray)
+    bottom_right = attr.ib(type=np.ndarray)
+
+    def __eq__(self, other):
+        """
+        Compare config objects for equality.
+
+        Needed as numpy arrays are don't implement the python __eq__ spec.
+        See https://github.com/python-attrs/attrs/issues/435 for discussion
+        """
+        return (
+            type(self) == type(other) and
+            np.array_equal(self.top_left, other.top_left) and
+            np.array_equal(self.top_right, other.top_right) and
+            np.array_equal(self.bottom_left, other.bottom_left) and
+            np.array_equal(self.bottom_right, other.bottom_right)
+        )
 
 
-@attr.s
+@attr.s(cmp=False)
 class Config:
     """
     Camera calibration properties for a fixed camera looking at a given plane
@@ -26,6 +41,29 @@ class Config:
     homography_matrix = attr.ib(type=np.ndarray, default=None)
     grid_image_corners = attr.ib(type=Corners, default=None)
     grid_space_corners = attr.ib(type=Corners, default=None)
+
+    def __eq__(self, other):
+        """
+        Compare config objects for equality.
+
+        Needed as numpy arrays are don't implement the python __eq__ spec.
+        See https://github.com/python-attrs/attrs/issues/435 for discussion
+        """
+        return (
+            type(self) == type(other) and
+            np.array_equal(self.distorted_camera_matrix, other.distorted_camera_matrix) and
+            np.array_equal(self.distortion_coefficients, other.distortion_coefficients) and
+            np.array_equal(self.undistorted_camera_matrix, other.undistorted_camera_matrix) and
+            np.array_equal(self.homography_matrix, other.homography_matrix) and
+            (
+                (self.grid_image_corners is None and other.grid_image_corners is None) or
+                (self.grid_image_corners is not None and other.grid_image_corners is not None and self.grid_image_corners == other.grid_image_corners)
+            ) and
+            (
+                (self.grid_space_corners is None and other.grid_space_corners is None) or
+                (self.grid_space_corners is not None and other.grid_space_corners is not None and self.grid_space_corners == other.grid_space_corners)
+            )
+        )
 
     def populate_distortion_from_chessboard(self, chessboard_path: str, rows: int, cols: int):
         """
@@ -201,5 +239,87 @@ class Config:
 
         self.homography_matrix, _ = cv.findHomography(grid_points, target_points)
         self.grid_image_corners = Corners(*target_corners)
-        self.grid_space_corners = Corners((0, 0), (width, 0), (0, height),  (width, height))
+        self.grid_space_corners = Corners(
+            np.array((0, 0), np.float32),
+            np.array((width, 0), np.float32),
+            np.array((0, height), np.float32),
+            np.array((width, height), np.float32)
+        )
         return True
+
+    @staticmethod
+    def load(file: str):
+        """
+        Loads a saved camera calibration configuration from file
+        :param file: The name of the file to load the configuration from
+        :return: A Config object populated with the loaded values
+        """
+        npz_file = np.load(file)
+
+        config = Config()
+        if 'distorted_camera_matrix' in npz_file:
+            array = npz_file['distorted_camera_matrix']
+            if array.shape == (3, 3):
+                config.distorted_camera_matrix = array
+        if 'distortion_coefficients' in npz_file:
+            array = npz_file['distortion_coefficients']
+            if array.shape[0] == 1 and array.shape[1] in (4, 5, 8, 12, 14):
+                config.distortion_coefficients = array
+        if 'undistorted_camera_matrix' in npz_file:
+            array = npz_file['undistorted_camera_matrix']
+            if array.shape == (3, 3):
+                config.undistorted_camera_matrix = array
+        if 'homography_matrix' in npz_file:
+            array = npz_file['homography_matrix']
+            if array.shape == (3, 3):
+                config.homography_matrix = array
+        if 'grid_image_corners' in npz_file:
+            array = npz_file['grid_image_corners']
+            if array.shape == (4, 2):
+                config.grid_image_corners = corners_from_array(array)
+        if 'grid_space_corners' in npz_file:
+            array = npz_file['grid_space_corners']
+            if array.shape == (4, 2):
+                config.grid_space_corners = corners_from_array(array)
+
+        npz_file.close()
+        return config
+
+    def save(self, file: str):
+        """
+        Save the current state of the config object to file
+        :param file: The name of the file to save the config's values to
+        """
+        np.savez(
+            file,
+            distorted_camera_matrix=self.distorted_camera_matrix,
+            distortion_coefficients=self.distortion_coefficients,
+            undistorted_camera_matrix=self.undistorted_camera_matrix,
+            homography_matrix=self.homography_matrix,
+            grid_image_corners=corners_to_array(self.grid_image_corners),
+            grid_space_corners=corners_to_array(self.grid_space_corners),
+        )
+
+
+def corners_to_array(corners: Corners):
+    if corners is None:
+        return None
+    return np.array(
+        [
+            corners.top_left,
+            corners.top_right,
+            corners.bottom_left,
+            corners.bottom_right
+        ],
+        np.float32)
+
+
+def corners_from_array(array: np.ndarray):
+    if array.shape != (4, 2):
+        raise ValueError('Array shape was not the required (4, 2) to populate a Corners object')
+    return Corners(
+        top_left=array[0].copy(),
+        top_right=array[1].copy(),
+        bottom_left=array[2].copy(),
+        bottom_right=array[3].copy(),
+    )
