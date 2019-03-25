@@ -22,10 +22,8 @@ detected in.
 ```python
 import camera_calibration as calib
 import cv2
-import numpy as np
 
 image_path = '002h.bmp'
-bgr = cv2.imread(image_path)
 rows = 6
 cols = 8
 
@@ -33,8 +31,7 @@ config = calib.Config()
 config.populate_distortion_from_chessboard(image_path, rows, cols)
 config.populate_homography_from_chessboard(image_path, cols, rows, 90.06, 64.45)
 
-np.set_printoptions(floatmode='maxprec', precision=16)
-
+bgr = cv2.imread(image_path)
 undistorted = calib.correct_camera_distortion(bgr, config)
 cv2.imwrite('undistorted.png', undistorted)
 grid_aligned = calib.correct_keystone_distortion(undistorted, config)
