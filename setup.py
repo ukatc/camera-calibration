@@ -8,7 +8,7 @@ import os
 import sys
 from shutil import rmtree
 
-from setuptools import setup, Command
+from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'camera_calibration'
@@ -103,7 +103,8 @@ setup(
     author=AUTHOR,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    py_modules=['camera_calibration'],
+    packages=find_packages(exclude=('tests',)),
+    #py_modules=['camera_calibration'],
 
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
