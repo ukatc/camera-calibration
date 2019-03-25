@@ -145,6 +145,8 @@ def test_points_transform_from_only_dot_grid_to_20_microns():
             if separation < nearest_distance:
                 nearest_distance = separation
                 original_point = distorted_points[j]
+            if separation < 1:
+                break
         # get the untransformed point that matches the transformed_point
         assert original_point is not None
         # set it to position i in the new grid
