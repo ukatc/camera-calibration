@@ -55,7 +55,7 @@ def correct_points(points: np.ndarray, config: conf.Config):
 def correct_point(point, config: conf.Config):
     """
     Map a point in pixel space to unit coordinates on the image plane, correcting for lens and keystone distortions
-    :param points: (x, y) point in the pixel space of a cameras images
+    :param point: (x, y) point in the pixel space of a cameras images
     :param config: Image correction configuration
     :return: An (x, y) pair of the image points mapped to the config's real coordinate system
     """
