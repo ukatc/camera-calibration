@@ -8,7 +8,7 @@ import os
 import sys
 from shutil import rmtree
 
-from setuptools import setup, Command
+from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'camera_calibration'
@@ -18,7 +18,7 @@ AUTHOR = 'UK Astronomy Technology Center'
 REQUIRES_PYTHON = '>=3.7.0'
 VERSION = None
 
-# What packages are required for this module to be executed?
+# What packages are required for this package to be executed?
 REQUIRED = [
     'attrs==19.1.0',
     'numpy==1.16.2',
@@ -103,7 +103,8 @@ setup(
     author=AUTHOR,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    py_modules=['camera_calibration'],
+    packages=find_packages(exclude=('tests',)),
+    #py_modules=['camera_calibration'],
 
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
