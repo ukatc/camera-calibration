@@ -124,3 +124,7 @@ dmypy.json
 
 # Pycharm IDE config files
 .idea/
+
+# Numpy saved files
+.npy
+.npz
