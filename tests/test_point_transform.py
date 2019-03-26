@@ -219,33 +219,3 @@ def test_points_transform_from_only_mock_chessboard_to_hundredth_mm():
             targets[j * 15 + i, 1] = 45 * (9-j) / 9
 
     assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
-
-
-def test_points_transform_from_only_mock_chessboard2_to_hundredth_mm():
-    config = calib.Config()
-    assert config.populate_distortion_from_chessboard('mocked checkboard2.png', 12, 17), 'Unable to populate distortion parameters'
-    assert config.populate_homography_from_chessboard('mocked checkboard2.png', 17, 12, 80, 55), 'Unable to populate homography parameters'
-
-    found, corners = cv.findChessboardCorners(cv.imread('mocked checkboard2.png'), (17, 12))
-    targets = np.zeros((len(corners), 2), np.float32)
-    for i in range(17):
-        for j in range(12):
-            targets[j * 17 + i, 0] = 80 * (16-i) / 16
-            targets[j * 17 + i, 1] = 55 * (11-j) / 11
-
-    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
-
-
-def test_points_transform_from_only_binarized_chessboard_to_hundredth_mm():
-    config = calib.Config()
-    assert config.populate_distortion_from_chessboard('binarized.png', 6, 8), 'Unable to populate distortion parameters'
-    assert config.populate_homography_from_chessboard('binarized.png', 8, 6, 90.06, 64.45), 'Unable to populate homography parameters'
-
-    found, corners = cv.findChessboardCorners(cv.imread('binarized.png'), (8, 6))
-    targets = np.zeros((len(corners), 2), np.float32)
-    for i in range(8):
-        for j in range(6):
-            targets[j * 8 + i, 0] = 90.06 * (7-i) / 7
-            targets[j * 8 + i, 1] = 64.45 * (5-j) / 5
-
-    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
