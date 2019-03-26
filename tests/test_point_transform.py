@@ -42,7 +42,7 @@ def assess_points_transform_to_given_absolute_accuracy(
 
 
 @pytest.mark.slow
-def test_points_transform_from_combined_config_to_hundredth_mm():
+def test_points_transform_from_combined_config_to_20_microns():
     params = cv.SimpleBlobDetector_Params()
     params.minArea = 50
     params.maxArea = 1000
@@ -84,7 +84,7 @@ def test_points_transform_from_combined_config_to_hundredth_mm():
                              [83/2, 59/2],
                              ], np.float32)
 
-    assess_points_transform_to_given_absolute_accuracy(config, points, expectations, 0.005)
+    assess_points_transform_to_given_absolute_accuracy(config, points, expectations, 0.02)
 
 
 @pytest.mark.slow
@@ -191,7 +191,7 @@ def test_points_transform_from_only_dot_grid_to_20_microns():
     assess_points_transform_to_given_absolute_accuracy(dot_config, distorted_grid, expectations, 0.02)
 
 
-def test_points_transform_from_only_chessboard_to_hundredth_mm():
+def test_points_transform_from_only_chessboard_to_20_microns():
     config = calib.Config()
     assert config.populate_distortion_from_chessboard('sample_images/002h.bmp', 6, 8), 'Unable to populate distortion parameters'
     assert config.populate_homography_from_chessboard('sample_images/002h.bmp', 8, 6, 90.06, 64.45), 'Unable to populate homography parameters'
@@ -203,10 +203,10 @@ def test_points_transform_from_only_chessboard_to_hundredth_mm():
             targets[j * 8 + i, 0] = 90.06 * (7-i) / 7
             targets[j * 8 + i, 1] = 64.45 * (5-j) / 5
 
-    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
+    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.02)
 
 
-def test_points_transform_from_only_mock_chessboard_to_hundredth_mm():
+def test_points_transform_from_only_mock_chessboard_to_20_microns():
     config = calib.Config()
     assert config.populate_distortion_from_chessboard('sample_images/mocked checkboard.png', 10, 15), 'Unable to populate distortion parameters'
     assert config.populate_homography_from_chessboard('sample_images/mocked checkboard.png', 15, 10, 70, 45), 'Unable to populate homography parameters'
@@ -218,4 +218,4 @@ def test_points_transform_from_only_mock_chessboard_to_hundredth_mm():
             targets[j * 15 + i, 0] = 70 * (14-i) / 14
             targets[j * 15 + i, 1] = 45 * (9-j) / 9
 
-    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.005)
+    assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.02)
