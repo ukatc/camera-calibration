@@ -248,10 +248,10 @@ class Config:
         return True
 
     @staticmethod
-    def load(file: str):
+    def load(file):
         """
         Loads a saved camera calibration configuration from file
-        :param file: The name of the file to load the configuration from
+        :param file: The file, or name of the file, to load the configuration from
         :return: A Config object populated with the loaded values
         """
         npz_file = np.load(file)
@@ -285,10 +285,10 @@ class Config:
         npz_file.close()
         return config
 
-    def save(self, file: str):
+    def save(self, file):
         """
         Save the current state of the config object to file
-        :param file: The name of the file to save the config's values to
+        :param file: The file, or name of the file, to save the config's values to
         """
         np.savez(
             file,
