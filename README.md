@@ -23,7 +23,7 @@ detected in.
 import camera_calibration as calib
 import cv2
 
-image_path = '002h.bmp'
+image_path = 'sample_images/002h.bmp'
 rows = 6
 cols = 8
 

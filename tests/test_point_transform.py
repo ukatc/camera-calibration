@@ -55,11 +55,11 @@ def test_points_transform_from_combined_config_to_hundredth_mm():
 
     config = calib.Config()
 
-    assert config.populate_distortion_from_chessboard('002h.bmp', 6, 8), 'Unable to populate distortion parameters'
+    assert config.populate_distortion_from_chessboard('sample_images/002h.bmp', 6, 8), 'Unable to populate distortion parameters'
     assert config.populate_homography_from_symmetric_dot_pattern(
-        'cleaned_grids/distcor_01.bmp', detector, 116, 170, 84.5, 57.5), 'Unable to populate homography parameters'
+        'sample_images/distcor_01_cleaned.bmp', detector, 116, 170, 84.5, 57.5), 'Unable to populate homography parameters'
 
-    # Points determined by dot centers from running an openCV blob detector over cleaned_grids/distcor_01.bmp
+    # Points determined by dot centers from running an openCV blob detector over sample_images/distcor_01_cleaned.bmp
     points = np.array([[[3584.902, 2468.0232]],  # bottom right
                        [[71.22837, 2466.539]],  # bottom left
                        [[68.2684, 62.64333]],  # top left
@@ -90,7 +90,7 @@ def test_points_transform_from_combined_config_to_hundredth_mm():
 @pytest.mark.slow
 def test_points_transform_from_only_dot_grid_to_20_microns():
     config = calib.Config()
-    assert config.populate_distortion_from_chessboard('002h.bmp', 6, 8), 'Unable to populate distortion parameters'
+    assert config.populate_distortion_from_chessboard('sample_images/002h.bmp', 6, 8), 'Unable to populate distortion parameters'
 
     params = cv.SimpleBlobDetector_Params()
     params.minArea = 50
@@ -105,7 +105,7 @@ def test_points_transform_from_only_dot_grid_to_20_microns():
     rows = 116
     cols = 170
 
-    dot_image = cv.imread('cleaned_grids/distcor_01.bmp')
+    dot_image = cv.imread('sample_images/distcor_01_cleaned.bmp')
     undistorted_dot_image = calib.correct_camera_distortion(dot_image, config)
     print('searching for grid in undistorted image')
     found, undistorted_grid = cv.findCirclesGrid(
@@ -193,10 +193,10 @@ def test_points_transform_from_only_dot_grid_to_20_microns():
 
 def test_points_transform_from_only_chessboard_to_hundredth_mm():
     config = calib.Config()
-    assert config.populate_distortion_from_chessboard('002h.bmp', 6, 8), 'Unable to populate distortion parameters'
-    assert config.populate_homography_from_chessboard('002h.bmp', 8, 6, 90.06, 64.45), 'Unable to populate homography parameters'
+    assert config.populate_distortion_from_chessboard('sample_images/002h.bmp', 6, 8), 'Unable to populate distortion parameters'
+    assert config.populate_homography_from_chessboard('sample_images/002h.bmp', 8, 6, 90.06, 64.45), 'Unable to populate homography parameters'
 
-    found, corners = cv.findChessboardCorners(cv.imread('002h.bmp'), (8, 6))
+    found, corners = cv.findChessboardCorners(cv.imread('sample_images/002h.bmp'), (8, 6))
     targets = np.zeros((len(corners), 2), np.float32)
     for i in range(8):
         for j in range(6):
@@ -208,10 +208,10 @@ def test_points_transform_from_only_chessboard_to_hundredth_mm():
 
 def test_points_transform_from_only_mock_chessboard_to_hundredth_mm():
     config = calib.Config()
-    assert config.populate_distortion_from_chessboard('mocked checkboard.png', 10, 15), 'Unable to populate distortion parameters'
-    assert config.populate_homography_from_chessboard('mocked checkboard.png', 15, 10, 70, 45), 'Unable to populate homography parameters'
+    assert config.populate_distortion_from_chessboard('sample_images/mocked checkboard.png', 10, 15), 'Unable to populate distortion parameters'
+    assert config.populate_homography_from_chessboard('sample_images/mocked checkboard.png', 15, 10, 70, 45), 'Unable to populate homography parameters'
 
-    found, corners = cv.findChessboardCorners(cv.imread('mocked checkboard.png'), (15, 10))
+    found, corners = cv.findChessboardCorners(cv.imread('sample_images/mocked checkboard.png'), (15, 10))
     targets = np.zeros((len(corners), 2), np.float32)
     for i in range(15):
         for j in range(10):
