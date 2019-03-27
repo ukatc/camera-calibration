@@ -83,7 +83,7 @@ def correct_camera_distortion(img, config):
 
 
 def correct_keystone_distortion(img, config, target_img_size=None):
-    # type: (np.ndarray, conf.Config, (float, float)) -> np.ndarray
+    # type: (np.ndarray, conf.Config, (int, int)) -> np.ndarray
     """
     Generates a copy of the given image with keystone distortion corrected
     :param img: An openCV image
@@ -93,7 +93,7 @@ def correct_keystone_distortion(img, config, target_img_size=None):
     """
     if target_img_size is None:
         target_img_size = (
-            config.grid_image_corners.top_left[0] + config.grid_image_corners.bottom_right[0],
-            config.grid_image_corners.top_left[1] + config.grid_image_corners.bottom_right[1],
+            int(config.grid_image_corners.top_left[0] + config.grid_image_corners.bottom_right[0]),
+            int(config.grid_image_corners.top_left[1] + config.grid_image_corners.bottom_right[1]),
         )
     return cv.warpPerspective(img, config.homography_matrix, target_img_size)
