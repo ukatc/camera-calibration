@@ -8,7 +8,7 @@ from typing import Union
 @attr.s(cmp=False)
 class Corners:
     """
-    Stores (X, Y) pairs for corners of a rectangle in an image
+    Stores (X, Y) pairs for corners of a rectangle in an image as 2 item numpy arrays
     """
     top_left = attr.ib(type=np.ndarray)
     top_right = attr.ib(type=np.ndarray)
@@ -23,7 +23,7 @@ class Corners:
         See https://github.com/python-attrs/attrs/issues/435 for discussion
         """
         return (
-            type(self) == type(other) and
+            isinstance(other, Corners) and
             np.array_equal(self.top_left, other.top_left) and
             np.array_equal(self.top_right, other.top_right) and
             np.array_equal(self.bottom_left, other.bottom_left) and
@@ -35,6 +35,15 @@ class Corners:
 class Config:
     """
     Camera calibration properties for a fixed camera looking at a given plane
+
+    Distortion related attributes:
+        distorted_camera_matrix: A 3x3 numpy array representing the camera matrix
+        distortion_coefficients: A 1x(4, 5, 8, 12, or 14) numpy array containing the camera's distortion coefficients
+        undistorted_camera_matrix: A 3x3 numpy array containing the new camera matrix for projecting undistorted images
+    Keystone/Homography related attributes:
+        homography_matrix: A 3x3 numpy array containing a homography matrix for projecting lens distortion corrected images to ones where the calibration grid is made of identical rectangles
+        grid_image_corners: A Corners instance containing the calibration grids corners as coordinates in a lens and keystone distortion corrected image
+        grid_space_corners: A Corners instance containing the calibration grids corners as coordinates on the plane in the real world
     """
     distorted_camera_matrix = attr.ib(type=np.ndarray, default=None)
     distortion_coefficients = attr.ib(type=np.ndarray, default=None)
@@ -51,7 +60,7 @@ class Config:
         See https://github.com/python-attrs/attrs/issues/435 for discussion
         """
         return (
-            type(self) == type(other) and
+            isinstance(other, Config) and
             np.array_equal(self.distorted_camera_matrix, other.distorted_camera_matrix) and
             np.array_equal(self.distortion_coefficients, other.distortion_coefficients) and
             np.array_equal(self.undistorted_camera_matrix, other.undistorted_camera_matrix) and

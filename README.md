@@ -38,6 +38,14 @@ grid_aligned = calib.correct_keystone_distortion(undistorted, config)
 cv2.imwrite('grid_aligned.png', grid_aligned)
 ```
 
+### In case of distortion in corrected images 
+
+If the images produced by the undistortion methods are wildly distorted, such as all input pixels being compressed into
+a small curved sliver across the output image after lens correction, or rotation by 90 degrees after keystone
+correction, this may be fixable by swapping the `row` and `column` parameters passed to the configuration methods.
+
+(Based on an OpenCV note [here](https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#calibratecamera))
+
 ## Dev environment
 
 The dev environment can be set up by running
