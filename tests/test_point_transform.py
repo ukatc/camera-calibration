@@ -1,13 +1,16 @@
+from __future__ import print_function
 import camera_calibration as calib
 import cv2 as cv
 import math
 import numpy as np
+import pprint
 import pytest
 import sys
 
 
 def assess_points_transform_to_given_absolute_accuracy(
-        config: calib.Config, points: np.ndarray, expectations: np.ndarray, accuracy: float):
+        config, points, expectations, accuracy):
+    # type: (calib.Config, np.ndarray, np.ndarray, float) -> None
     """
     Apply a camera correction to points, testing if the result is within the given accuracy of their expected corrected
     values
@@ -23,6 +26,7 @@ def assess_points_transform_to_given_absolute_accuracy(
     assert points.shape == corrected_points.shape
 
     distances = []
+    distance_hist = {}
     highest = 0
     for i in range(len(corrected_points)):
         original = points[i, 0]
@@ -34,9 +38,17 @@ def assess_points_transform_to_given_absolute_accuracy(
             highest = distance
             print('new highest: px{} res{} exp{} dist{}'.format(original, point, expectation, distance))
         distances.append(distance)
+        microns = math.ceil(distance*1000)
+        if microns in distance_hist:
+            distance_hist[microns] += 1
+        else:
+            distance_hist[microns] = 1
+
 
     print('average deviation:\n{}mm'.format(sum(distances) / len(distances)))
     print('max deviation:\n{}mm'.format(max(distances)))
+    print('deviation spread:')
+    pprint.pprint(distance_hist)
 
     assert max(distances) <= accuracy, 'Expected and calculated points differed by more than the permitted accuracy'
 
@@ -165,7 +177,7 @@ def test_points_transform_from_only_dot_grid_to_20_microns():
             sparse_grid[i * sparse_cols + j, 0, 0] = distorted_grid[(i*2)*cols + (j*2), 0, 0]
             sparse_grid[i * sparse_cols + j, 0, 1] = distorted_grid[(i*2)*cols + (j*2), 0, 1]
 
-    print('\ngenerating config')
+    print('generating config')
     h, w = dot_image.shape[:2]
     dot_config = calib.Config()
     dot_config.populate_distortion_from_grid(sparse_grid, sparse_cols, sparse_rows, w, h)

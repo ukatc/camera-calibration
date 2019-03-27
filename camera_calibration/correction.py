@@ -6,7 +6,8 @@ import cv2 as cv
 import numpy as np
 
 
-def grid_points_to_real(image_points: np.ndarray, image_corners: conf.Corners, real_corners: conf.Corners):
+def grid_points_to_real(image_points, image_corners, real_corners):
+    # type: (np.ndarray, conf.Corners, conf.Corners) -> np.ndarray
     """
     Map pixel-space coordinates in an image space to a coordinate system based on the given corner mappings
     :param image_points: Array of image space points to be mapped
@@ -37,7 +38,8 @@ def grid_points_to_real(image_points: np.ndarray, image_corners: conf.Corners, r
     return real_points
 
 
-def correct_points(points: np.ndarray, config: conf.Config):
+def correct_points(points, config):
+    # type: (np.ndarray, conf.Config) -> np.ndarray
     """
     Map points in pixel space to unit coordinates on the image plane, correcting for lens and keystone distortions
     :param points: Points in the pixel space of a cameras images
@@ -52,7 +54,8 @@ def correct_points(points: np.ndarray, config: conf.Config):
     return grid_points_to_real(flattened, config.grid_image_corners, config.grid_space_corners)
 
 
-def correct_point(point, config: conf.Config):
+def correct_point(point, config):
+    # type: ((float, float), conf.Config) -> (float, float)
     """
     Map a point in pixel space to unit coordinates on the image plane, correcting for lens and keystone distortions
     :param point: (x, y) point in the pixel space of a cameras images
@@ -64,7 +67,8 @@ def correct_point(point, config: conf.Config):
     return corrected[0, 0, 0], corrected[0, 0, 1]
 
 
-def correct_camera_distortion(img, config: conf.Config):
+def correct_camera_distortion(img, config):
+    # type: (np.ndarray, conf.Config) -> np.ndarray
     """
     Generates a copy of the given image with lens distortion corrected
     :param img: An openCV image
@@ -78,7 +82,8 @@ def correct_camera_distortion(img, config: conf.Config):
                         config.undistorted_camera_matrix)
 
 
-def correct_keystone_distortion(img, config: conf.Config, target_img_size=None):
+def correct_keystone_distortion(img, config, target_img_size=None):
+    # type: (np.ndarray, conf.Config, (int, int)) -> np.ndarray
     """
     Generates a copy of the given image with keystone distortion corrected
     :param img: An openCV image
@@ -88,7 +93,7 @@ def correct_keystone_distortion(img, config: conf.Config, target_img_size=None):
     """
     if target_img_size is None:
         target_img_size = (
-            config.grid_image_corners.top_left[0] + config.grid_image_corners.bottom_right[0],
-            config.grid_image_corners.top_left[1] + config.grid_image_corners.bottom_right[1],
+            int(config.grid_image_corners.top_left[0] + config.grid_image_corners.bottom_right[0]),
+            int(config.grid_image_corners.top_left[1] + config.grid_image_corners.bottom_right[1]),
         )
     return cv.warpPerspective(img, config.homography_matrix, target_img_size)

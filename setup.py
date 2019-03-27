@@ -15,7 +15,7 @@ NAME = 'camera_calibration'
 DESCRIPTION = 'Python library for performing camera calibration and image un-distortion.'
 URL = 'https://github.com/ukatc/camera-calibration'
 AUTHOR = 'UK Astronomy Technology Center'
-REQUIRES_PYTHON = '>=3.7.0'
+REQUIRES_PYTHON = '>=2.7.0'
 VERSION = None
 
 # What packages are required for this package to be executed?
@@ -23,6 +23,7 @@ REQUIRED = [
     'attrs==19.1.0',
     'numpy==1.16.2',
     'opencv-python==4.0.0.21',
+    'typing',
 ]
 
 # What packages are optional?
@@ -42,7 +43,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 try:
     with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
         long_description = '\n' + f.read()
-except FileNotFoundError:
+except Exception:
     long_description = DESCRIPTION
 
 # Load the package's __version__.py module as a dictionary.
@@ -74,18 +75,18 @@ class UploadCommand(Command):
 
     def run(self):
         try:
-            self.status('Removing previous builds…')
+            self.status('Removing previous builds...')
             rmtree(os.path.join(here, 'dist'))
         except OSError:
             pass
 
-        self.status('Building Source and Wheel (universal) distribution…')
+        self.status('Building Source and Wheel (universal) distribution...')
         os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
 
-        self.status('Uploading the package to PyPI via Twine…')
+        self.status('Uploading the package to PyPI via Twine...')
         os.system('twine upload dist/*')
 
-        self.status('Pushing git tags…')
+        self.status('Pushing git tags...')
         os.system('git tag v{0}'.format(about['__version__']))
         os.system('git push --tags')
 
@@ -118,6 +119,8 @@ setup(
         # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'License :: Other/Proprietary License',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
