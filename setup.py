@@ -23,6 +23,7 @@ REQUIRED = [
     'attrs==19.1.0',
     'numpy==1.16.2',
     'opencv-python==4.0.0.21',
+    'typing',
 ]
 
 # What packages are optional?
