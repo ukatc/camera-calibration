@@ -2,6 +2,7 @@ import attr
 import cv2 as cv
 import math
 import numpy as np
+from typing import Union
 
 
 @attr.s(cmp=False)
@@ -65,15 +66,15 @@ class Config:
             )
         )
 
-    def populate_distortion_from_chessboard(self, chessboard_path: str, rows: int, cols: int):
+    def populate_distortion_from_chessboard(self, chessboard_image: Union[np.ndarray, str], rows: int, cols: int):
         """
         Populate a config object's camera matrices and distortion coefficient properties using a chessboard image
-        :param chessboard_path: The path to an image of a chess grid taken by the camera
+        :param chessboard_image: An image, or path to an image, of a chess grid taken by the camera
         :param rows: The number of rows in the grid of black square corner intersection points
         :param cols: The number of columns in the grid of black square corner intersection points
         :return: A boolean indicating if the properties were successfully populated
         """
-        chessboard = cv.imread(chessboard_path)
+        chessboard = get_image(chessboard_image)
         gray_chessboard = cv.cvtColor(chessboard, cv.COLOR_BGR2GRAY)
         found, corners = cv.findChessboardCorners(gray_chessboard, (rows, cols))
         if not found:
@@ -82,16 +83,16 @@ class Config:
         h, w = chessboard.shape[:2]
         return self.populate_distortion_from_grid(corners, rows, cols, w, h)
 
-    def populate_distortion_from_symmetric_dot_pattern(self, dot_grid_path: str, dot_detector: cv.SimpleBlobDetector, rows: int, cols: int):
+    def populate_distortion_from_symmetric_dot_pattern(self, dot_grid_image: Union[np.ndarray, str], dot_detector: cv.SimpleBlobDetector, rows: int, cols: int):
         """
         Populate a config object's camera matrices and distortion coefficient properties using a grid of reference dots
-        :param dot_grid_path: The path to an image of a symmetric dot grid pattern taken by the camera
+        :param dot_grid_image: An image, or path to an image, of a symmetric dot grid pattern taken by the camera
         :param dot_detector: An openCV dot detector able to detect all the dots in the given image
         :param rows: The number of rows in the dot grid
         :param cols: The number of columns in the dot grid
         :return: A boolean indicating if the properties were successfully populated
         """
-        dots = cv.imread(dot_grid_path)
+        dots = get_image(dot_grid_image)
         found, grid = cv.findCirclesGrid(
             dots,
             (cols, rows),
@@ -105,10 +106,10 @@ class Config:
         h, w = dots.shape[:2]
         return self.populate_distortion_from_grid(grid, rows, cols, w, h)
 
-    def populate_homography_from_chessboard(self, chessboard_path: str, rows: int, cols: int, width: float, height: float, corners_only: bool=False):
+    def populate_homography_from_chessboard(self, chessboard_image: Union[np.ndarray, str], rows: int, cols: int, width: float, height: float, corners_only: bool=False):
         """
         Populate a config object's homography matrix and grid corner properties using a lens distorted chessboard image
-        :param chessboard_path: The path to a chessboard image taken by the camera
+        :param chessboard_image: An image, or path to an image, of a chessboard image taken by the camera
         :param rows: The number of rows in the grid of black square corner intersection points
         :param cols: The number of columns in the grid of black square corner intersection points
         :param width: The width of the grid, measured from black square corner intersection points
@@ -116,7 +117,7 @@ class Config:
         :param corners_only: Whether to calculate the transform with just the corner points, or all points of the grid
         :return: A boolean indicating if the properties were successfully populated
         """
-        chessboard = cv.imread(chessboard_path)
+        chessboard = get_image(chessboard_image)
         gray_chessboard = cv.cvtColor(chessboard, cv.COLOR_BGR2GRAY)
         found, corners = cv.findChessboardCorners(gray_chessboard, (rows, cols))
         if not found:
@@ -127,10 +128,10 @@ class Config:
                                      P=self.undistorted_camera_matrix)
         return self.populate_homography_from_grid(corners, rows, cols, width, height, corners_only)
 
-    def populate_homography_from_symmetric_dot_pattern(self, dot_grid_path: str, dot_detector: cv.SimpleBlobDetector, rows: int, cols: int, width: float, height: float, corners_only: bool=False):
+    def populate_homography_from_symmetric_dot_pattern(self, dot_grid_image: Union[np.ndarray, str], dot_detector: cv.SimpleBlobDetector, rows: int, cols: int, width: float, height: float, corners_only: bool=False):
         """
         Populate a config object's homography matrix and grid corner properties using a lens distorted grid of reference points
-        :param dot_grid_path: The path to an image of a symmetric dot grid pattern taken by the camera
+        :param dot_grid_image: An image, or path to an image, of a symmetric dot grid pattern taken by the camera
         :param dot_detector: An openCV dot detector able to detect all the dots in the given image
         :param rows: The number of rows in the dot grid
         :param cols: The number of columns in the dot grid
@@ -139,7 +140,7 @@ class Config:
         :param corners_only: Whether to calculate the transform with just the corner points, or all points of the grid
         :return: A boolean indicating if the properties were successfully populated
         """
-        dots = cv.imread(dot_grid_path)
+        dots = get_image(dot_grid_image)
         delensed = cv.undistort(dots,
                                 self.distorted_camera_matrix,
                                 self.distortion_coefficients,
@@ -323,3 +324,15 @@ def corners_from_array(array: np.ndarray):
         bottom_left=array[2].copy(),
         bottom_right=array[3].copy(),
     )
+
+
+def get_image(img: Union[np.ndarray, str]):
+    """
+    Return an image either by returning the argument if it's already a numpy array, or loading it as one using openCV
+    :param img: An image, or path to an image
+    :return: The image
+    """
+    if isinstance(img, np.ndarray):
+        return img
+    else:
+        return cv.imread(img)
