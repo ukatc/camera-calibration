@@ -7,7 +7,8 @@ import sys
 
 
 def assess_points_transform_to_given_absolute_accuracy(
-        config: calib.Config, points: np.ndarray, expectations: np.ndarray, accuracy: float):
+        config, points, expectations, accuracy):
+    # type: (calib.Config, np.ndarray, np.ndarray, float) -> None
     """
     Apply a camera correction to points, testing if the result is within the given accuracy of their expected corrected
     values
