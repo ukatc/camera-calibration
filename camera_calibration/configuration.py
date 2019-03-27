@@ -6,7 +6,7 @@ from typing import Union
 
 
 @attr.s(cmp=False)
-class Corners:
+class Corners(object):
     """
     Stores (X, Y) pairs for corners of a rectangle in an image as 2 item numpy arrays
     """
@@ -32,7 +32,7 @@ class Corners:
 
 
 @attr.s(cmp=False)
-class Config:
+class Config(object):
     """
     Camera calibration properties for a fixed camera looking at a given plane
 
