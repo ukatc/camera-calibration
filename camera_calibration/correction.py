@@ -105,7 +105,7 @@ def correct_image(img, config, correction_level):
                            config.distortion_coefficients,
                            None,
                            config.undistorted_camera_matrix)
-    if correction_level & Correction.keystone_distsortion:
+    if correction_level & Correction.keystone_distortion:
         target_img_size = (
             int(config.grid_image_corners.top_left[0] + config.grid_image_corners.bottom_right[0]),
             int(config.grid_image_corners.top_left[1] + config.grid_image_corners.bottom_right[1]),
