@@ -24,6 +24,7 @@ REQUIRED = [
     'numpy==1.16.2',
     'opencv-python==4.0.0.21',
     'typing',
+    'enum34',
 ]
 
 # What packages are optional?

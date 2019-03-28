@@ -21,7 +21,7 @@ def assess_points_transform_to_given_absolute_accuracy(
     """
     np.set_printoptions(suppress=True)
 
-    corrected_points = calib.correct_points(points, config)
+    corrected_points = calib.correct_points(points, config, calib.Correction.lens_keystone_and_real_coordinates)
 
     assert points.shape == corrected_points.shape
 
@@ -118,7 +118,7 @@ def test_points_transform_from_only_dot_grid_to_20_microns():
     cols = 170
 
     dot_image = cv.imread('sample_images/distcor_01_cleaned.bmp')
-    undistorted_dot_image = calib.correct_camera_distortion(dot_image, config)
+    undistorted_dot_image = calib.correct_image(dot_image, config, calib.Correction.lens_distortion)
     print('searching for grid in undistorted image')
     found, undistorted_grid = cv.findCirclesGrid(
         undistorted_dot_image,

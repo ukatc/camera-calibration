@@ -3,3 +3,4 @@ opencv-python==4.0.0.21
 attrs==19.1.0
 pytest==4.3.1
 typing
+enum34
