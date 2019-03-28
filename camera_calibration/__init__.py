@@ -5,6 +5,6 @@ from camera_calibration.configuration import (
 from camera_calibration.correction import (
     correct_point,
     correct_points,
-    correct_camera_distortion,
-    correct_keystone_distortion,
+    correct_image,
+    Correction,
 )
