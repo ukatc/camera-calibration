@@ -128,3 +128,8 @@ dmypy.json
 # Numpy saved files
 *.npy
 *.npz
+
+# Image files
+*.jpg
+*.bmp
+*.png
