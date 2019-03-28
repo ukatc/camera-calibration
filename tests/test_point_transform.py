@@ -89,11 +89,11 @@ def test_points_transform_from_combined_config_to_100_microns():
                              [0, 0],
                              [84.5, 0],
 
-                             [83/2, 0],
-                             [83/2, 57.5],
-                             [0, 59/2],
-                             [84.5, 59/2],
-                             [83/2, 59/2],
+                             [83/2.0, 0],
+                             [83/2.0, 57.5],
+                             [0, 59/2.0],
+                             [84.5, 59/2.0],
+                             [83/2.0, 59/2.0],
                              ], np.float32)
 
     assess_points_transform_to_given_absolute_accuracy(config, points, expectations, 0.1)
@@ -212,8 +212,8 @@ def test_points_transform_from_only_chessboard_to_100_microns():
     targets = np.zeros((len(corners), 2), np.float32)
     for i in range(8):
         for j in range(6):
-            targets[j * 8 + i, 0] = 90.06 * (7-i) / 7
-            targets[j * 8 + i, 1] = 64.45 * (5-j) / 5
+            targets[j * 8 + i, 0] = 90.06 * (7-i) / 7.0
+            targets[j * 8 + i, 1] = 64.45 * (5-j) / 5.0
 
     assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.1)
 
@@ -227,7 +227,7 @@ def test_points_transform_from_only_mock_chessboard_to_100_microns():
     targets = np.zeros((len(corners), 2), np.float32)
     for i in range(15):
         for j in range(10):
-            targets[j * 15 + i, 0] = 70 * (14-i) / 14
-            targets[j * 15 + i, 1] = 45 * (9-j) / 9
+            targets[j * 15 + i, 0] = 70 * (14-i) / 14.0
+            targets[j * 15 + i, 1] = 45 * (9-j) / 9.0
 
     assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.1)
