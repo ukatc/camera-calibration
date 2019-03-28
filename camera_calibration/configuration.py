@@ -75,7 +75,7 @@ class Config(object):
             )
         )
 
-    def populate_distortion_from_chessboard(self, chessboard_image, rows, cols):
+    def populate_lens_parameters_from_chessboard(self, chessboard_image, rows, cols):
         # type: (Union[np.ndarray, str], int, int) -> bool
         """
         Populate a config object's camera matrices and distortion coefficient properties using a chessboard image
@@ -91,9 +91,9 @@ class Config(object):
             return False
 
         h, w = chessboard.shape[:2]
-        return self.populate_distortion_from_grid(corners, rows, cols, w, h)
+        return self.populate_lens_parameters_from_grid(corners, rows, cols, w, h)
 
-    def populate_distortion_from_symmetric_dot_pattern(self, dot_grid_image, dot_detector, rows, cols):
+    def populate_lens_parameters_from_symmetric_dot_pattern(self, dot_grid_image, dot_detector, rows, cols):
         # type: (Union[np.ndarray, str], cv.SimpleBlobDetector, int, int) -> bool
         """
         Populate a config object's camera matrices and distortion coefficient properties using a grid of reference dots
@@ -115,9 +115,9 @@ class Config(object):
             return False
 
         h, w = dots.shape[:2]
-        return self.populate_distortion_from_grid(grid, rows, cols, w, h)
+        return self.populate_lens_parameters_from_grid(grid, rows, cols, w, h)
 
-    def populate_homography_from_chessboard(self, chessboard_image, rows, cols, width, height, corners_only=False):
+    def populate_keystone_and_real_parameters_from_chessboard(self, chessboard_image, rows, cols, width, height, corners_only=False):
         # type: (Union[np.ndarray, str], int, int, float, float, bool) -> bool
         """
         Populate a config object's homography matrix and grid corner properties using a lens distorted chessboard image
@@ -138,9 +138,9 @@ class Config(object):
                                      self.distorted_camera_matrix,
                                      self.distortion_coefficients,
                                      P=self.undistorted_camera_matrix)
-        return self.populate_homography_from_grid(corners, rows, cols, width, height, corners_only)
+        return self.populate_keystone_and_real_parameters_from_grid(corners, rows, cols, width, height, corners_only)
 
-    def populate_homography_from_symmetric_dot_pattern(self, dot_grid_image, dot_detector, rows, cols, width, height, corners_only=False):
+    def populate_keystone_and_real_parameters_from_symmetric_dot_pattern(self, dot_grid_image, dot_detector, rows, cols, width, height, corners_only=False):
         # type: (Union[np.ndarray, str], cv.SimpleBlobDetector, int, int, float, float, bool) -> bool
         """
         Populate a config object's homography matrix and grid corner properties using a lens distorted grid of reference points
@@ -170,9 +170,9 @@ class Config(object):
         if not found:
             return False
 
-        return self.populate_homography_from_grid(grid, cols, rows, width, height, corners_only)
+        return self.populate_keystone_and_real_parameters_from_grid(grid, cols, rows, width, height, corners_only)
 
-    def populate_distortion_from_grid(self, grid, rows, cols, image_width, image_height):
+    def populate_lens_parameters_from_grid(self, grid, rows, cols, image_width, image_height):
         # type: (np.ndarray, int, int, int, int) -> bool
         """
         Populate a config object's camera matrices and distortion coefficient properties using a grid points
@@ -204,7 +204,7 @@ class Config(object):
                                                                          (image_width, image_height))
         return True
 
-    def populate_homography_from_grid(self, grid, cols, rows, width, height, corners_only=False):
+    def populate_keystone_and_real_parameters_from_grid(self, grid, cols, rows, width, height, corners_only=False):
         # type: (np.ndarray, int, int, float, float, bool) -> bool
         """
         Populate a config object's homography matrix and grid corner properties using a grid of reference points which have been corrected for lens distortion
