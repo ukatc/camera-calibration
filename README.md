@@ -28,8 +28,8 @@ rows = 6
 cols = 8
 
 config = calib.Config()
-config.populate_distortion_from_chessboard(image_path, rows, cols)
-config.populate_homography_from_chessboard(image_path, cols, rows, 90.06, 64.45)
+config.populate_lens_parameters_from_chessboard(image_path, rows, cols)
+config.populate_keystone_and_real_parameters_from_chessboard(image_path, cols, rows, 90.06, 64.45)
 
 bgr = cv2.imread(image_path)
 undistorted = calib.correct_image(bgr, config, calib.Correction.lens_distortion)
