@@ -12,12 +12,12 @@ pip install git+https://github.com/ukatc/camera-calibration
 ## Usage
 
 The package exposes a set of methods for correcting camera distortion in images and pixel
-coordinates, as well as converting pixel coordinates to real world units.
+coordinates, as well as projecting points in the image to coordinates on the plane of the calibration images used.
 
-These methods all require a calibration configuration object be passed in.
-This configuration object can either have its attributes set directly, or via the various
-`populate_*()` methods on the object, using a set of known reference points, or an image they can be
-detected in.
+The correction methods all require a calibration configuration object,
+and an indicator of the corrections to be performed, be passed in.
+The configuration object can either have its attributes set directly, or via the various
+`populate_*()` methods on the object using a known reference grid or an image that one can be detected in.
 
 ```python
 import camera_calibration as calib
@@ -37,6 +37,8 @@ cv2.imwrite('undistorted.png', undistorted)
 grid_aligned = calib.correct_image(undistorted, config, calib.Correction.keystone_distortion)
 cv2.imwrite('grid_aligned.png', grid_aligned)
 ```
+
+Further examples are included in the [example_scripts](example_scripts) directory.
 
 ### In case of distortion in corrected images 
 
