@@ -18,9 +18,9 @@ import math
 import numpy as np
 from pprint import pprint
 
-calibration_file_name = 'calibration.npz'
-dot_grid_image_path = '../sample_images/distcor_04_cleaned.bmp'
-heatmap_image_file_name = 'heatmap.bmp'
+calibration_file_name = "calibration.npz"
+dot_grid_image_path = "../sample_images/distcor_04_cleaned.bmp"
+heatmap_image_file_name = "heatmap.bmp"
 dot_grid_rows = 116
 dot_grid_cols = 170
 
@@ -42,10 +42,14 @@ params.filterByColor = True
 dot_detector = cv.SimpleBlobDetector_create(params)
 
 dot_image = cv.imread(dot_grid_image_path)
-distorted_points = np.array([[point] for point in cv.KeyPoint_convert(dot_detector.detect(dot_image))],
-                            np.float32)
+distorted_points = np.array(
+    [[point] for point in cv.KeyPoint_convert(dot_detector.detect(dot_image))],
+    np.float32,
+)
 
-corrected_points = calib.correct_points(distorted_points, dot_config, calib.Correction.lens_keystone_and_real_coordinates)
+corrected_points = calib.correct_points(
+    distorted_points, dot_config, calib.Correction.lens_keystone_and_real_coordinates
+)
 
 distances = []
 distance_hist = {}
@@ -68,9 +72,9 @@ for lone_point in corrected_points:
 
 max_deviation = max(distances)
 
-print('average deviation:\n{}mm'.format(sum(distances) / len(distances)))
-print('max deviation:\n{}mm'.format(max_deviation))
-print('deviation spread:')
+print("average deviation:\n{}mm".format(sum(distances) / len(distances)))
+print("max deviation:\n{}mm".format(max_deviation))
+print("deviation spread:")
 pprint(distance_hist)
 
 heatmap = np.zeros((dot_grid_rows, dot_grid_cols, 3), np.uint8)

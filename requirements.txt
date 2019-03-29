@@ -2,5 +2,6 @@ numpy==1.16.2
 opencv-python==4.0.0.21
 attrs==19.1.0
 pytest==4.3.1
+black
 typing
 enum34
