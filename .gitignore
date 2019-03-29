@@ -126,5 +126,10 @@ dmypy.json
 .idea/
 
 # Numpy saved files
-.npy
-.npz
+*.npy
+*.npz
+
+# Image files
+*.jpg
+*.bmp
+*.png

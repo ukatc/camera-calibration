@@ -1,5 +1,10 @@
 # Camera Calibration
 
+
+![version](https://img.shields.io/github/tag/ukatc/camera-calibration.svg)
+![python versions](https://img.shields.io/badge/python-2.7%20|%203.4%20|%203.5%20|%203.6%20|%203.7-informational.svg)
+![code style](https://img.shields.io/badge/code%20style-black-000000.svg)
+
 A python library to simplify performing camera calibration and image un-distortion using OpenCV.
 
 ## Installation
@@ -12,31 +17,32 @@ pip install git+https://github.com/ukatc/camera-calibration
 ## Usage
 
 The package exposes a set of methods for correcting camera distortion in images and pixel
-coordinates, as well as converting pixel coordinates to real world units.
+coordinates, and can also convert pixel coordinates to real world coordinates on the plane of the calibration image.
+In all of these, a calibration configuration object, and an indicator of the corrections to perform, must be passed in.
 
-These methods all require a calibration configuration object be passed in.
-This configuration object can either have its attributes set directly, or via the various
-`populate_*()` methods on the object, using a set of known reference points, or an image they can be
-detected in.
+- `camera_calibration.correct_point(point, config, correction_level)` Corrects a single (x, y) point
+- `camera_calibration.correct_points(points, config, correction_level)` Corrects an Nx1x2 numpy array of N points
+- `camera_calibration.correct_image(image, config, correction_level)` Corrects an image
 
-```python
-import camera_calibration as calib
-import cv2
+The configuration object is an instance of `camera_calibration.Config`.
+It can either have its attributes set:
+- directly on the object, if the values are known
+- through the various `populate_*()` methods on the object, which calculate the properties using a reference grid of
+points, or an image that contains them
+- by creating an instance from a saved config using the classes `save()` and `load()` methods.
 
-image_path = 'sample_images/002h.bmp'
-rows = 6
-cols = 8
+The correction levels are defined in the `camera_calibration.Correction` enum. It contains three base transforms,
+as well as combined values that will perform multiple corrections in a single method call. The base transforms are
+- `lens_distortion` Corrects for the camera's lens distortion
+- `keystone_distortion` Corrects for any angle offset from the camera and the calibration image's normal. When applied
+to the calibration image used, the calibration grid will appear rectangular
+- `real_coordinates` Only affects points. Project's the pixel coordinates to a position on the calibration
+image's plane based on the grid's corners and size
 
-config = calib.Config()
-config.populate_lens_parameters_from_chessboard(image_path, rows, cols)
-config.populate_keystone_and_real_parameters_from_chessboard(image_path, cols, rows, 90.06, 64.45)
+Each base transform will only work correctly if the prior base transforms have been applied. The combined transforms
+apply each component base transform in the correct order.
 
-bgr = cv2.imread(image_path)
-undistorted = calib.correct_image(bgr, config, calib.Correction.lens_distortion)
-cv2.imwrite('undistorted.png', undistorted)
-grid_aligned = calib.correct_image(undistorted, config, calib.Correction.keystone_distortion)
-cv2.imwrite('grid_aligned.png', grid_aligned)
-```
+Example scripts can be found [here](example_scripts).
 
 ### In case of distortion in corrected images 
 
@@ -55,9 +61,19 @@ pip install -r requirements.txt
 
 ### Tests
 
-Tests are performed using pytest, which is included in the packages's `requirements.txt`.
-They can be run from the package's directory with the `pytest` command
+Tests are performed using [pytest](https://docs.pytest.org/en/latest/).
+They can be run from the package's directory with the `pytest` command.
 
-## Versioning
+To ensure compatibility with all versions, these should be run in at least environments for python 2.7 and 3.7
+
+### Code style
+
+This package uses [Black](https://black.readthedocs.io/en/stable/index.html) formatting.
+It is advisable to configure the formatter to run automatically,
+following either its IDE or version control integration guide.
+
+### Versioning
 
 This package uses [semantic versioning](https://semver.org/).
+
+Package version number is stored [here](camera_calibration/__version__.py).

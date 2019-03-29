@@ -2,7 +2,7 @@ import attr
 import cv2 as cv
 import math
 import numpy as np
-from typing import Union
+from typing import Optional, Union
 
 
 @attr.s(cmp=False)
@@ -10,6 +10,7 @@ class Corners(object):
     """
     Stores (X, Y) pairs for corners of a rectangle in an image as 2 item numpy arrays
     """
+
     top_left = attr.ib(type=np.ndarray)
     top_right = attr.ib(type=np.ndarray)
     bottom_left = attr.ib(type=np.ndarray)
@@ -23,11 +24,11 @@ class Corners(object):
         See https://github.com/python-attrs/attrs/issues/435 for discussion
         """
         return (
-            isinstance(other, Corners) and
-            np.array_equal(self.top_left, other.top_left) and
-            np.array_equal(self.top_right, other.top_right) and
-            np.array_equal(self.bottom_left, other.bottom_left) and
-            np.array_equal(self.bottom_right, other.bottom_right)
+            isinstance(other, Corners)
+            and np.array_equal(self.top_left, other.top_left)
+            and np.array_equal(self.top_right, other.top_right)
+            and np.array_equal(self.bottom_left, other.bottom_left)
+            and np.array_equal(self.bottom_right, other.bottom_right)
         )
 
 
@@ -45,6 +46,7 @@ class Config(object):
         grid_image_corners: A Corners instance containing the calibration grids corners as coordinates in a lens and keystone distortion corrected image
         grid_space_corners: A Corners instance containing the calibration grids corners as coordinates on the plane in the real world
     """
+
     distorted_camera_matrix = attr.ib(type=np.ndarray, default=None)
     distortion_coefficients = attr.ib(type=np.ndarray, default=None)
     undistorted_camera_matrix = attr.ib(type=np.ndarray, default=None)
@@ -60,18 +62,32 @@ class Config(object):
         See https://github.com/python-attrs/attrs/issues/435 for discussion
         """
         return (
-            isinstance(other, Config) and
-            np.array_equal(self.distorted_camera_matrix, other.distorted_camera_matrix) and
-            np.array_equal(self.distortion_coefficients, other.distortion_coefficients) and
-            np.array_equal(self.undistorted_camera_matrix, other.undistorted_camera_matrix) and
-            np.array_equal(self.homography_matrix, other.homography_matrix) and
-            (
-                (self.grid_image_corners is None and other.grid_image_corners is None) or
-                (self.grid_image_corners is not None and other.grid_image_corners is not None and self.grid_image_corners == other.grid_image_corners)
-            ) and
-            (
-                (self.grid_space_corners is None and other.grid_space_corners is None) or
-                (self.grid_space_corners is not None and other.grid_space_corners is not None and self.grid_space_corners == other.grid_space_corners)
+            isinstance(other, Config)
+            and np.array_equal(
+                self.distorted_camera_matrix, other.distorted_camera_matrix
+            )
+            and np.array_equal(
+                self.distortion_coefficients, other.distortion_coefficients
+            )
+            and np.array_equal(
+                self.undistorted_camera_matrix, other.undistorted_camera_matrix
+            )
+            and np.array_equal(self.homography_matrix, other.homography_matrix)
+            and (
+                (self.grid_image_corners is None and other.grid_image_corners is None)
+                or (
+                    self.grid_image_corners is not None
+                    and other.grid_image_corners is not None
+                    and self.grid_image_corners == other.grid_image_corners
+                )
+            )
+            and (
+                (self.grid_space_corners is None and other.grid_space_corners is None)
+                or (
+                    self.grid_space_corners is not None
+                    and other.grid_space_corners is not None
+                    and self.grid_space_corners == other.grid_space_corners
+                )
             )
         )
 
@@ -93,7 +109,9 @@ class Config(object):
         h, w = chessboard.shape[:2]
         return self.populate_lens_parameters_from_grid(corners, rows, cols, w, h)
 
-    def populate_lens_parameters_from_symmetric_dot_pattern(self, dot_grid_image, dot_detector, rows, cols):
+    def populate_lens_parameters_from_symmetric_dot_pattern(
+        self, dot_grid_image, dot_detector, rows, cols
+    ):
         # type: (Union[np.ndarray, str], cv.SimpleBlobDetector, int, int) -> bool
         """
         Populate a config object's camera matrices and distortion coefficient properties using a grid of reference dots
@@ -109,7 +127,7 @@ class Config(object):
             (cols, rows),
             cv.CALIB_CB_SYMMETRIC_GRID + cv.CALIB_CB_CLUSTERING,
             dot_detector,
-            cv.CirclesGridFinderParameters()
+            cv.CirclesGridFinderParameters(),
         )
         if not found:
             return False
@@ -117,7 +135,9 @@ class Config(object):
         h, w = dots.shape[:2]
         return self.populate_lens_parameters_from_grid(grid, rows, cols, w, h)
 
-    def populate_keystone_and_real_parameters_from_chessboard(self, chessboard_image, rows, cols, width, height, corners_only=False):
+    def populate_keystone_and_real_parameters_from_chessboard(
+        self, chessboard_image, rows, cols, width, height, corners_only=False
+    ):
         # type: (Union[np.ndarray, str], int, int, float, float, bool) -> bool
         """
         Populate a config object's homography matrix and grid corner properties using a lens distorted chessboard image
@@ -134,13 +154,26 @@ class Config(object):
         found, corners = cv.findChessboardCorners(gray_chessboard, (rows, cols))
         if not found:
             return False
-        corners = cv.undistortPoints(corners,
-                                     self.distorted_camera_matrix,
-                                     self.distortion_coefficients,
-                                     P=self.undistorted_camera_matrix)
-        return self.populate_keystone_and_real_parameters_from_grid(corners, rows, cols, width, height, corners_only)
+        corners = cv.undistortPoints(
+            corners,
+            self.distorted_camera_matrix,
+            self.distortion_coefficients,
+            P=self.undistorted_camera_matrix,
+        )
+        return self.populate_keystone_and_real_parameters_from_grid(
+            corners, rows, cols, width, height, corners_only
+        )
 
-    def populate_keystone_and_real_parameters_from_symmetric_dot_pattern(self, dot_grid_image, dot_detector, rows, cols, width, height, corners_only=False):
+    def populate_keystone_and_real_parameters_from_symmetric_dot_pattern(
+        self,
+        dot_grid_image,
+        dot_detector,
+        rows,
+        cols,
+        width,
+        height,
+        corners_only=False,
+    ):
         # type: (Union[np.ndarray, str], cv.SimpleBlobDetector, int, int, float, float, bool) -> bool
         """
         Populate a config object's homography matrix and grid corner properties using a lens distorted grid of reference points
@@ -154,25 +187,31 @@ class Config(object):
         :return: A boolean indicating if the properties were successfully populated
         """
         dots = get_image(dot_grid_image)
-        delensed = cv.undistort(dots,
-                                self.distorted_camera_matrix,
-                                self.distortion_coefficients,
-                                None,
-                                self.undistorted_camera_matrix)
+        delensed = cv.undistort(
+            dots,
+            self.distorted_camera_matrix,
+            self.distortion_coefficients,
+            None,
+            self.undistorted_camera_matrix,
+        )
         found, grid = cv.findCirclesGrid(
             delensed,
             (cols, rows),
             cv.CALIB_CB_SYMMETRIC_GRID + cv.CALIB_CB_CLUSTERING,
             dot_detector,
-            cv.CirclesGridFinderParameters()
+            cv.CirclesGridFinderParameters(),
         )
 
         if not found:
             return False
 
-        return self.populate_keystone_and_real_parameters_from_grid(grid, cols, rows, width, height, corners_only)
+        return self.populate_keystone_and_real_parameters_from_grid(
+            grid, cols, rows, width, height, corners_only
+        )
 
-    def populate_lens_parameters_from_grid(self, grid, rows, cols, image_width, image_height):
+    def populate_lens_parameters_from_grid(
+        self, grid, rows, cols, image_width, image_height
+    ):
         # type: (np.ndarray, int, int, int, int) -> bool
         """
         Populate a config object's camera matrices and distortion coefficient properties using a grid points
@@ -184,12 +223,13 @@ class Config(object):
         :return: A boolean indicating if the properties were successfully populated
         """
         objp = np.zeros((cols * rows, 3), np.float32)
-        objp[:, :2] = np.mgrid[0:rows * 5:5, 0:cols * 5:5].T.reshape(-1, 2)
+        objp[:, :2] = np.mgrid[0 : rows * 5 : 5, 0 : cols * 5 : 5].T.reshape(-1, 2)
         objpoints = [objp]
         imgpoints = [grid]
 
-        calibrated, camera_matrix, distortion_coefficients, _, _ = cv.calibrateCamera(objpoints, imgpoints, (image_width, image_height), None,
-                                                                                      None)
+        calibrated, camera_matrix, distortion_coefficients, _, _ = cv.calibrateCamera(
+            objpoints, imgpoints, (image_width, image_height), None, None
+        )
 
         if not calibrated:
             return False
@@ -197,14 +237,18 @@ class Config(object):
         self.distorted_camera_matrix = camera_matrix
         self.distortion_coefficients = distortion_coefficients
 
-        self.undistorted_camera_matrix, _ = cv.getOptimalNewCameraMatrix(camera_matrix,
-                                                                         distortion_coefficients,
-                                                                         (image_width, image_height),
-                                                                         1,
-                                                                         (image_width, image_height))
+        self.undistorted_camera_matrix, _ = cv.getOptimalNewCameraMatrix(
+            camera_matrix,
+            distortion_coefficients,
+            (image_width, image_height),
+            1,
+            (image_width, image_height),
+        )
         return True
 
-    def populate_keystone_and_real_parameters_from_grid(self, grid, cols, rows, width, height, corners_only=False):
+    def populate_keystone_and_real_parameters_from_grid(
+        self, grid, cols, rows, width, height, corners_only=False
+    ):
         # type: (np.ndarray, int, int, float, float, bool) -> bool
         """
         Populate a config object's homography matrix and grid corner properties using a grid of reference points which have been corrected for lens distortion
@@ -225,21 +269,26 @@ class Config(object):
             return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
 
         border = 50
-        grid_width = max(distance(top_left, top_right),
-                         distance(bottom_left, bottom_right))
-        grid_height = max(distance(top_left, bottom_left),
-                          distance(top_right, bottom_right))
-        point_spacing = math.ceil(max(grid_width / (cols - 1),
-                                      grid_height / (rows - 1)))
+        grid_width = max(
+            distance(top_left, top_right), distance(bottom_left, bottom_right)
+        )
+        grid_height = max(
+            distance(top_left, bottom_left), distance(top_right, bottom_right)
+        )
+        point_spacing = math.ceil(
+            max(grid_width / (cols - 1), grid_height / (rows - 1))
+        )
         grid_width = point_spacing * (cols - 1)
         grid_height = point_spacing * (rows - 1)
 
-        target_corners = np.array([
-            [border, border],  # top left
-            [grid_width + border, border],  # top right
-            [border, grid_height + border],  # bottom left
-            [grid_width + border, grid_height + border],  # bottom right
-        ])
+        target_corners = np.array(
+            [
+                [border, border],  # top left
+                [grid_width + border, border],  # top right
+                [border, grid_height + border],  # bottom left
+                [grid_width + border, grid_height + border],  # bottom right
+            ]
+        )
 
         if corners_only:
             grid_points = np.array([top_left, top_right, bottom_left, bottom_right])
@@ -250,8 +299,10 @@ class Config(object):
             # measuring from the bottom left, initially going along rows, to match the detected dot grid
             for row in range(rows):
                 for col in range(cols):
-                    target_points[row * cols + col, :2] = ((border + ((cols - (1+col)) * point_spacing)),
-                                                           (border + ((rows - (1+row)) * point_spacing)))
+                    target_points[row * cols + col, :2] = (
+                        (border + ((cols - (1 + col)) * point_spacing)),
+                        (border + ((rows - (1 + row)) * point_spacing)),
+                    )
 
         self.homography_matrix, _ = cv.findHomography(grid_points, target_points)
         self.grid_image_corners = Corners(*target_corners)
@@ -259,7 +310,7 @@ class Config(object):
             np.array((0, 0), np.float32),
             np.array((width, 0), np.float32),
             np.array((0, height), np.float32),
-            np.array((width, height), np.float32)
+            np.array((width, height), np.float32),
         )
         return True
 
@@ -273,28 +324,28 @@ class Config(object):
         npz_file = np.load(file)
 
         config = Config()
-        if 'distorted_camera_matrix' in npz_file:
-            array = npz_file['distorted_camera_matrix']
+        if "distorted_camera_matrix" in npz_file:
+            array = npz_file["distorted_camera_matrix"]
             if array.shape == (3, 3):
                 config.distorted_camera_matrix = array
-        if 'distortion_coefficients' in npz_file:
-            array = npz_file['distortion_coefficients']
+        if "distortion_coefficients" in npz_file:
+            array = npz_file["distortion_coefficients"]
             if array.shape[0] == 1 and array.shape[1] in (4, 5, 8, 12, 14):
                 config.distortion_coefficients = array
-        if 'undistorted_camera_matrix' in npz_file:
-            array = npz_file['undistorted_camera_matrix']
+        if "undistorted_camera_matrix" in npz_file:
+            array = npz_file["undistorted_camera_matrix"]
             if array.shape == (3, 3):
                 config.undistorted_camera_matrix = array
-        if 'homography_matrix' in npz_file:
-            array = npz_file['homography_matrix']
+        if "homography_matrix" in npz_file:
+            array = npz_file["homography_matrix"]
             if array.shape == (3, 3):
                 config.homography_matrix = array
-        if 'grid_image_corners' in npz_file:
-            array = npz_file['grid_image_corners']
+        if "grid_image_corners" in npz_file:
+            array = npz_file["grid_image_corners"]
             if array.shape == (4, 2):
                 config.grid_image_corners = corners_from_array(array)
-        if 'grid_space_corners' in npz_file:
-            array = npz_file['grid_space_corners']
+        if "grid_space_corners" in npz_file:
+            array = npz_file["grid_space_corners"]
             if array.shape == (4, 2):
                 config.grid_space_corners = corners_from_array(array)
 
@@ -318,7 +369,7 @@ class Config(object):
 
 
 def corners_to_array(corners):
-    # type: (Corners) -> np.ndarray
+    # type: (Optional[Corners]) -> Optional[np.ndarray]
     if corners is None:
         return None
     return np.array(
@@ -326,15 +377,18 @@ def corners_to_array(corners):
             corners.top_left,
             corners.top_right,
             corners.bottom_left,
-            corners.bottom_right
+            corners.bottom_right,
         ],
-        np.float32)
+        np.float32,
+    )
 
 
 def corners_from_array(array):
     # type: (np.ndarray) -> Corners
     if array.shape != (4, 2):
-        raise ValueError('Array shape was not the required (4, 2) to populate a Corners object')
+        raise ValueError(
+            "Array shape was not the required (4, 2) to populate a Corners object"
+        )
     return Corners(
         top_left=array[0].copy(),
         top_right=array[1].copy(),
