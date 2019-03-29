@@ -57,9 +57,17 @@ pip install -r requirements.txt
 
 ### Tests
 
-Tests are performed using pytest, which is included in the packages's `requirements.txt`.
+Tests are performed using [pytest](https://docs.pytest.org/en/latest/).
 They can be run from the package's directory with the `pytest` command
 
-## Versioning
+### Code style
+
+This package uses [Black](https://black.readthedocs.io/en/stable/index.html) formatting.
+It is advisable to configure the formatter to run automatically,
+following either its IDE or version control integration guide.
+
+### Versioning
 
 This package uses [semantic versioning](https://semver.org/).
+
+Package version number is stored [here](camera_calibration/__version__.py).
