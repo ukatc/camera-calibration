@@ -2,7 +2,7 @@ import attr
 import cv2 as cv
 import math
 import numpy as np
-from typing import Union
+from typing import Optional, Union
 
 
 @attr.s(cmp=False)
@@ -369,7 +369,7 @@ class Config(object):
 
 
 def corners_to_array(corners):
-    # type: (Corners) -> np.ndarray
+    # type: (Optional[Corners]) -> Optional[np.ndarray]
     if corners is None:
         return None
     return np.array(
