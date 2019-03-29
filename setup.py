@@ -17,7 +17,7 @@ DESCRIPTION = (
 )
 URL = "https://github.com/ukatc/camera-calibration"
 AUTHOR = "UK Astronomy Technology Center"
-REQUIRES_PYTHON = ">=2.7.0"
+REQUIRES_PYTHON = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 VERSION = None
 
 # What packages are required for this package to be executed?
@@ -121,6 +121,9 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: Implementation :: CPython",
     ],
