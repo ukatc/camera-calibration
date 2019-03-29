@@ -13,12 +13,11 @@ pip install git+https://github.com/ukatc/camera-calibration
 
 The package exposes a set of methods for correcting camera distortion in images and pixel
 coordinates, and can also convert pixel coordinates to real world coordinates on the plane of the calibration image.
+In all of these, a calibration configuration object, and an indicator of the corrections to perform, must be passed in.
 
 - `camera_calibration.correct_point(point, config, correction_level)` Corrects a single (x, y) point
 - `camera_calibration.correct_points(points, config, correction_level)` Corrects an Nx1x2 numpy array of N points
 - `camera_calibration.correct_image(image, config, correction_level)` Corrects an image
-
-In all of these, a calibration configuration object, and an indicator of the corrections to be performed, be passed in.
 
 The configuration object is an instance of `camera_calibration.Config`.
 It can either have its attributes set:
@@ -32,7 +31,7 @@ as well as combined values that will perform multiple corrections in a single me
 - `lens_distortion` Corrects for the camera's lens distortion
 - `keystone_distortion` Corrects for any angle offset from the camera and the calibration image's normal. When applied
 to the calibration image used, the calibration grid will appear rectangular
-- `real_coordinates` Only affects individual points. Project's the pixel coordinates to a position on the calibration
+- `real_coordinates` Only affects points. Project's the pixel coordinates to a position on the calibration
 image's plane based on the grid's corners and size
 
 Each base transform will only work correctly if the prior base transforms have been applied. The combined transforms
@@ -58,7 +57,9 @@ pip install -r requirements.txt
 ### Tests
 
 Tests are performed using [pytest](https://docs.pytest.org/en/latest/).
-They can be run from the package's directory with the `pytest` command
+They can be run from the package's directory with the `pytest` command.
+
+To ensure compatibility with all versions, these should be run in at least environments for python 2.7 and 3.7
 
 ### Code style
 

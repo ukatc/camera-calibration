@@ -16,7 +16,7 @@ class Correction(IntEnum):
     - lens_distortion - Corrects for the camera's lens distortion
     - keystone_distortion - Corrects for any angle offset from the camera and the calibration image's normal.
     When applied to the calibration image used, the calibration grid will appear rectangular
-    - real_coordinates - Only affects individual points. Project's the pixel coordinates to a position on the
+    - real_coordinates - Only affects points. Project's the pixel coordinates to a position on the
     calibration image's plane based on the grid's corners and size
     """
 
