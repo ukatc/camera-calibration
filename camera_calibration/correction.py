@@ -11,7 +11,13 @@ class Correction(IntEnum):
     """
     Enum to indicate corrections to perform on images and points
 
-    Single transforms are powers of two, so bitwise and should be used to tell if a single step is required.
+    Single transforms have power of two values, so bitwise-and should be used to tell if a single step is required.
+    The individual corrections are:
+    - lens_distortion - Corrects for the camera's lens distortion
+    - keystone_distortion - Corrects for any angle offset from the camera and the calibration image's normal.
+    When applied to the calibration image used, the calibration grid will appear rectangular
+    - real_coordinates - Only affects individual points. Project's the pixel coordinates to a position on the
+    calibration image's plane based on the grid's corners and size
     """
     lens_distortion = 1
     keystone_distortion = 2
