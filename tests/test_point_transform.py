@@ -281,3 +281,45 @@ def test_points_transform_from_only_mock_chessboard_to_100_microns():
             targets[j * 15 + i, 1] = 45 * (9 - j) / 9.0
 
     assess_points_transform_to_given_absolute_accuracy(config, corners, targets, 0.1)
+
+
+def test_homography_border_doesnt_affect_point_transforms():
+    default_border_config = calib.Config()
+    assert default_border_config.populate_lens_parameters_from_chessboard(
+        "sample_images/002h.bmp", 6, 8
+    ), "Unable to populate distortion parameters"
+    assert default_border_config.populate_keystone_and_real_parameters_from_chessboard(
+        "sample_images/002h.bmp", 8, 6, 90.06, 64.45
+    ), "Unable to populate homography parameters"
+
+    custom_border_config = calib.Config()
+    assert custom_border_config.populate_lens_parameters_from_chessboard(
+        "sample_images/002h.bmp", 6, 8
+    ), "Unable to populate distortion parameters"
+    assert custom_border_config.populate_keystone_and_real_parameters_from_chessboard(
+        "sample_images/002h.bmp", 8, 6, 90.06, 64.45, border=200
+    ), "Unable to populate homography parameters"
+
+    found, corners = cv.findChessboardCorners(
+        cv.imread("sample_images/mocked checkboard.png"), (15, 10)
+    )
+    targets = np.zeros((len(corners), 2), np.float32)
+    for i in range(15):
+        for j in range(10):
+            targets[j * 15 + i, 0] = 70 * (14 - i) / 14.0
+            targets[j * 15 + i, 1] = 45 * (9 - j) / 9.0
+
+    default_border_transformed = calib.correct_points(
+        corners,
+        default_border_config,
+        calib.Correction.lens_keystone_and_real_coordinates,
+    )
+    custom_border_transformed = calib.correct_points(
+        corners,
+        custom_border_config,
+        calib.Correction.lens_keystone_and_real_coordinates,
+    )
+
+    assert np.allclose(
+        default_border_transformed, custom_border_transformed
+    ), "Real world coordinates not consistent with image borders"
