@@ -1,7 +1,7 @@
 # Camera Calibration
 
 
-![version](https://img.shields.io/github/tag/ukatc/camera-calibration.svg)
+![version](https://img.shields.io/github/release-pre/ukatc/camera-calibration.svg)
 ![python versions](https://img.shields.io/badge/python-2.7%20|%203.4%20|%203.5%20|%203.6%20|%203.7-informational.svg)
 ![code style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
