@@ -370,6 +370,27 @@ class Config(object):
             grid_space_corners=corners_to_array(self.grid_space_corners),
         )
 
+    @staticmethod
+    def from_dict(dictionary):
+        return Config(
+            array_for_list(dictionary["distorted_camera_matrix"]),
+            array_for_list(dictionary["distortion_coefficients"]),
+            array_for_list(dictionary["undistorted_camera_matrix"]),
+            array_for_list(dictionary["homography_matrix"]),
+            corners_from_dict(dictionary["grid_image_corners"]),
+            corners_from_dict(dictionary["grid_space_corners"]),
+        )
+
+    def to_dict(self):
+        return {
+            "distorted_camera_matrix": list_for_array(self.distorted_camera_matrix),
+            "distortion_coefficients": list_for_array(self.distortion_coefficients),
+            "undistorted_camera_matrix": list_for_array(self.undistorted_camera_matrix),
+            "homography_matrix": list_for_array(self.homography_matrix),
+            "grid_image_corners": corners_to_dict(self.grid_image_corners),
+            "grid_space_corners": corners_to_dict(self.grid_space_corners),
+        }
+
 
 def corners_to_array(corners):
     # type: (Optional[Corners]) -> Optional[np.ndarray]
@@ -398,6 +419,44 @@ def corners_from_array(array):
         bottom_left=array[2].copy(),
         bottom_right=array[3].copy(),
     )
+
+
+def corners_to_dict(corners):
+    # type: (Optional[Corners]) -> Optional[dict]
+    if corners is None:
+        return None
+    return {
+        "top_left": list_for_array(corners.top_left),
+        "top_right": list_for_array(corners.top_right),
+        "bottom_left": list_for_array(corners.bottom_left),
+        "bottom_right": list_for_array(corners.bottom_right),
+    }
+
+
+def corners_from_dict(dictionary):
+    # type: (Optional[dict]) -> Optional[Corners]
+    if dictionary is None:
+        return None
+    return Corners(
+        array_for_list(dictionary["top_left"]),
+        array_for_list(dictionary["top_right"]),
+        array_for_list(dictionary["bottom_left"]),
+        array_for_list(dictionary["bottom_right"]),
+    )
+
+
+def list_for_array(array):
+    # type: (Optional[np.ndarray]) -> Optional[list]
+    if array is None:
+        return None
+    return list(array.tolist())
+
+
+def array_for_list(input_list):
+    # type: (Optional[list]) -> Optional[np.ndarray]
+    if input_list is None:
+        return None
+    return np.array(input_list)
 
 
 def get_image(img):

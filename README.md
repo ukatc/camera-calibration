@@ -26,10 +26,11 @@ In all of these, a calibration configuration object, and an indicator of the cor
 
 The configuration object is an instance of `camera_calibration.Config`.
 It can either have its attributes set:
-- directly on the object, if the values are known
 - through the various `populate_*()` methods on the object, which calculate the properties using a reference grid of
 points, or an image that contains them
-- by creating an instance from a saved config using the classes `save()` and `load()` methods.
+- directly on the object, if the values are known
+- by creating an instance from a saved config using the classes `save()` and `load()`, or `to_dict()` and `from_dict()`
+  methods
 
 The correction levels are defined in the `camera_calibration.Correction` enum. It contains three base transforms,
 as well as combined values that will perform multiple corrections in a single method call. The base transforms are
