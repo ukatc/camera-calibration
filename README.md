@@ -1,8 +1,8 @@
 # Camera Calibration
 
 
-![version](https://img.shields.io/github/tag/ukatc/camera-calibration.svg)
-![python versions](https://img.shields.io/badge/python-2.7%20|%203.4%20|%203.5%20|%203.6%20|%203.7-informational.svg)
+![version](https://img.shields.io/github/release-pre/ukatc/camera-calibration.svg)
+![python versions](https://img.shields.io/badge/python-2.7%20|%203.4%2B-informational.svg)
 ![code style](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 A python library to simplify performing camera calibration and image un-distortion using OpenCV.
@@ -22,14 +22,15 @@ In all of these, a calibration configuration object, and an indicator of the cor
 
 - `camera_calibration.correct_point(point, config, correction_level)` Corrects a single (x, y) point
 - `camera_calibration.correct_points(points, config, correction_level)` Corrects an Nx1x2 numpy array of N points
-- `camera_calibration.correct_image(image, config, correction_level)` Corrects an image
+- `camera_calibration.correct_image(image, config, correction_level)` Corrects an OpenCV image
 
 The configuration object is an instance of `camera_calibration.Config`.
 It can either have its attributes set:
-- directly on the object, if the values are known
 - through the various `populate_*()` methods on the object, which calculate the properties using a reference grid of
 points, or an image that contains them
-- by creating an instance from a saved config using the classes `save()` and `load()` methods.
+- directly on the object, if the values are known
+- by creating an instance from a saved config using the classes `save()` and `load()`, or `to_dict()` and `from_dict()`
+  methods
 
 The correction levels are defined in the `camera_calibration.Correction` enum. It contains three base transforms,
 as well as combined values that will perform multiple corrections in a single method call. The base transforms are
@@ -64,7 +65,7 @@ pip install -r requirements.txt
 Tests are performed using [pytest](https://docs.pytest.org/en/latest/).
 They can be run from the package's directory with the `pytest` command.
 
-To ensure compatibility with all versions, these should be run in at least environments for python 2.7 and 3.7
+These should be run in environments for all supported versions to ensure compatibility.
 
 ### Code style
 
