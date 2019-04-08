@@ -372,6 +372,11 @@ class Config(object):
 
     @staticmethod
     def from_dict(dictionary):
+        """
+        Generate a camera calibration configuration from a dictionary generated with the to_dict() method
+        :param dictionary: The dictionary to load the configuration values from
+        :return: A Config object populated with the loaded values
+        """
         return Config(
             array_for_list(dictionary["distorted_camera_matrix"]),
             array_for_list(dictionary["distortion_coefficients"]),
@@ -382,6 +387,10 @@ class Config(object):
         )
 
     def to_dict(self):
+        """
+        Generate a dictionary containing list copies of the config's attributes
+        :return: The dictionary instance
+        """
         return {
             "distorted_camera_matrix": list_for_array(self.distorted_camera_matrix),
             "distortion_coefficients": list_for_array(self.distortion_coefficients),
