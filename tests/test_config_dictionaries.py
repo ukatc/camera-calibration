@@ -8,7 +8,7 @@ def test_empty_config_is_preserved_exactly_across_dictionary_conversion():
     config = calib.Config()
 
     dictionary = config.to_dict()
-    loaded = calib.Config.from_dict(dictionary)
+    loaded = calib.Config.from_dict(eval(repr(dictionary)))
 
     np.set_printoptions(threshold=sys.maxsize)
 
@@ -20,7 +20,7 @@ def test_partial_config_is_preserved_exactly_across_dictionary_conversion():
     config.populate_lens_parameters_from_chessboard("sample_images/002h.bmp", 6, 8)
 
     dictionary = config.to_dict()
-    loaded = calib.Config.from_dict(dictionary)
+    loaded = calib.Config.from_dict(eval(repr(dictionary)))
 
     np.set_printoptions(threshold=sys.maxsize)
 
@@ -35,7 +35,7 @@ def test_full_config_is_preserved_exactly_across_dictionary_conversion():
     )
 
     dictionary = config.to_dict()
-    loaded = calib.Config.from_dict(dictionary)
+    loaded = calib.Config.from_dict(eval(repr(dictionary)))
 
     np.set_printoptions(threshold=sys.maxsize)
 
