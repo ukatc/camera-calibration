@@ -1,9 +1,9 @@
 # Camera Calibration
 
 
-![version](https://img.shields.io/github/release-pre/ukatc/camera-calibration.svg)
-![python versions](https://img.shields.io/badge/python-2.7%20|%203.4%2B-informational.svg)
-![code style](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![version](https://img.shields.io/github/release/ukatc/camera-calibration.svg)](https://github.com/ukatc/camera-calibration/releases)
+[![python versions](https://img.shields.io/badge/python-2.7%20|%203.4%2B-informational.svg)](https://www.python.org/)
+[![code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/)
 
 A python library to simplify performing camera calibration and image un-distortion using OpenCV.
 
